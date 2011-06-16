@@ -1,0 +1,16 @@
+<package>
+  <description brief="ecto_ros">
+
+     ecto_ros
+
+  </description>
+  <author>Ethan Rublee</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ecto_ros</url>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+
+</package>
+
+
