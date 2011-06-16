@@ -42,16 +42,17 @@
 #include <boost/program_options.hpp>
 
 #include <iostream>
-
-#include <opencv2/core/core.hpp>
-
+#include <string>
 namespace ros
 {
 
 using ecto::tendrils;
+using std::string;
+using namespace sensor_msgs;
 
 struct ImageDepthSub
 {
+
   typedef message_filters::Subscriber<CameraInfo> CameraInfoSubscriber;
   typedef message_filters::Subscriber<Image> ImageSubscriber;
   typedef message_filters::sync_policies::ApproximateTime<Image, CameraInfo, Image, CameraInfo> ApproxSyncPolicy;
@@ -92,7 +93,7 @@ public:
 
     //setup the approxiamate time sync
     sync_sub_.connectInput(image_sub_, camera_info_sub_, depth_sub_,depth_camera_info_sub_);
-    sync_sub_.registerCallback(&RecognitionNode::dataCallback, this);
+    sync_sub_.registerCallback(&ImageDepthSub::dataCallback, this);
   }
   void onInit()
   {
@@ -111,6 +112,10 @@ public:
     float dt = (n - prev_).toSec();
     ROS_INFO_STREAM("Processing frame bundle. dt=" << dt);
     prev_ = n;
+    image_ci = camera_info;
+    depth_ci = depth_camera_info;
+    this->image = image;
+    this->depth = depth;
   }
   static void declare_params(tendrils& params)
   {
@@ -120,49 +125,49 @@ public:
 
   static void declare_io(const tendrils& parms, tendrils& in, tendrils& out)
   {
-    out.declare<cv::Mat>("image","The rgb image");
-    out.declare<cv::Mat>("depth","The 16bit single channel depth image, in mm.");
-    out.declare<cv::Mat>("K_image","The 3x3 camera intrinsics matrix for the rgb image");
+    out.declare<ImageConstPtr>("image","The rgb image");
+    out.declare<ImageConstPtr>("depth","The 16bit single channel depth image, in mm.");
+    out.declare<CameraInfoConstPtr>("image_camera_info","The camera info for the rgb image.");
+    out.declare<CameraInfoConstPtr>("depth_camera_info","The camera info for the depth image.");
   }
 
   void configure(tendrils& p)
   {
-      std::string camera_remap = boost::format("camera:=%s") % p.get<std::string>("camera");
-      std::string depth_camera_remap = boost::format("depth_camera:=%s") % p.get<std::string>("depth_camera");
+      std::string camera_remap = boost::str( boost::format("camera:=%s") % p.get<std::string>("camera") );
+      std::string depth_camera_remap = boost::str( boost::format("depth_camera:=%s") % p.get<std::string>("depth_camera") );
       int argc = 3;
-      char ** argv = ["./camera_sub",camera_remap.c_str(),depth_camera_remap.c_str(),0];
-      ros::init(argc, argv , "camera_sub");
+      const char* argv[] = {"./camera_sub",camera_remap.c_str(),depth_camera_remap.c_str(),0};
+      ros::init(argc, const_cast<char**>(argv) , "camera_sub");
       onInit();
   }
   
-  int process(const tendrils& in, tendrils& /*out*/)
+  int process(const tendrils& in, tendrils& out)
   {
-    std::cout << in.get<std::string> ("str") << std::endl;
+    do
+    {
+      ros::spinOnce();
+      //spin until we get a package.
+      if(image) break;
+    }while(true);
+    
+    out.get<ImageConstPtr>("image") = image;
+    out.get<ImageConstPtr>("depth") = depth;
+    out.get<CameraInfoConstPtr>("image_camera_info") = image_ci;
+    out.get<CameraInfoConstPtr>("depth_camera_info") = depth_ci;
+    image.reset();
+    depth.reset();
+    image_ci.reset();
+    depth_ci.reset();
     return ecto::OK;
   }
+  ImageConstPtr image,depth;
+  CameraInfoConstPtr image_ci,depth_ci;
 };
 
-struct Reader
-{
-  static void declare_io(const tendrils& parms, tendrils& in, tendrils& out)
-  {
-    out.declare<std::string> ("output", "Output from standard in");
-  }
-
-  ecto::ReturnCode process(const tendrils& in, tendrils& out)
-  {
-    std::string o;
-    std::cin >> o;
-    out.get<std::string> ("output") = o;
-    return ecto::eOK;
-  }
-};
 
 }
 
-BOOST_PYTHON_MODULE(hello_ecto)
+BOOST_PYTHON_MODULE(ecto_ros)
 {
-  using namespace hello_ecto;
-  ecto::wrap<Printer>("Printer", "Prints a string input to standard output.");
-  ecto::wrap<Reader>("Reader", "Reads input from standard input.");
+  ecto::wrap<ros::ImageDepthSub>("ImageDepthSub","Subscribes to something that looks like a kinect, using time synchronizers.");
 }

@@ -10,6 +10,9 @@
   <url>http://ros.org/wiki/ecto_ros</url>
   <depend package="roscpp"/>
   <depend package="rospy"/>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="message_filters"/>
 
 </package>
 

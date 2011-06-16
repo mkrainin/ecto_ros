@@ -31,7 +31,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib/ecto_ros)
 
 find_package(ecto REQUIRED)
 
-ectomodule(camera_subs
-    src/camera_subs.cpp
+ectomodule(camera_sub
+    src/camera_sub.cpp
 )
 
