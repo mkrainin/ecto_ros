@@ -28,7 +28,7 @@
  */
 
 #include <ecto/ecto.hpp>
-
+#include <boost/python/stl_iterator.hpp>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -46,128 +46,144 @@
 namespace ros
 {
 
-using ecto::tendrils;
-using std::string;
-using namespace sensor_msgs;
+  using ecto::tendrils;
+  using std::string;
+  using namespace sensor_msgs;
 
-struct ImageDepthSub
-{
-
-  typedef message_filters::Subscriber<CameraInfo> CameraInfoSubscriber;
-  typedef message_filters::Subscriber<Image> ImageSubscriber;
-  typedef message_filters::sync_policies::ApproximateTime<Image, CameraInfo, Image, CameraInfo> ApproxSyncPolicy;
-  typedef message_filters::Synchronizer<ApproxSyncPolicy> SynchronizerImageDepthCamera;
-
-  ImageSubscriber image_sub_, depth_sub_;
-  CameraInfoSubscriber camera_info_sub_, depth_camera_info_sub_;
-  SynchronizerImageDepthCamera sync_sub_;
-  ros::NodeHandle nh_;
-  string camera_topic_, depth_camera_topic_;
-  ros::Time prev_;
-public:
-  ImageDepthSub() :
-    sync_sub_(10)
-  {
-  }
-
-  void setupPubs()
+  struct ImageDepthSub
   {
 
-  }
-  void setupSubs()
-  {
-    //may be remapped to : /camera/rgb
-    camera_topic_ = nh_.resolveName("camera", true);
-    depth_camera_topic_ = nh_.resolveName("depth_camera", true);
+    typedef message_filters::Subscriber<CameraInfo> CameraInfoSubscriber;
+    typedef message_filters::Subscriber<Image> ImageSubscriber;
+    typedef message_filters::sync_policies::ApproximateTime<Image, CameraInfo,
+        Image, CameraInfo> ApproxSyncPolicy;
+    typedef message_filters::Synchronizer<ApproxSyncPolicy>
+        SynchronizerImageDepthCamera;
 
-    ROS_INFO_STREAM("camera topic is set to " << camera_topic_);
-    ROS_INFO_STREAM("depth camera topic is set to " <<depth_camera_topic_ );
+    boost::scoped_ptr<ImageSubscriber> image_sub_, depth_sub_;
+    boost::scoped_ptr<CameraInfoSubscriber> camera_info_sub_,
+        depth_camera_info_sub_;
+    boost::scoped_ptr<SynchronizerImageDepthCamera> sync_sub_;
+    boost::scoped_ptr<ros::NodeHandle> nh_;
+    string camera_topic_, depth_camera_topic_;
+  public:
 
-    //subscribe to rgb camera topics
-    image_sub_.subscribe(nh_, camera_topic_ + "/image_color", 2);
-    camera_info_sub_.subscribe(nh_, camera_topic_ + "/camera_info", 2);
-    
-    //subscribe to depth image topics
-    depth_sub_.subscribe(nh_, depth_camera_topic_ + "/image", 2);
-    depth_camera_info_sub_.subscribe(nh_,  depth_camera_topic_ + "/camera_info", 2);
-
-    //setup the approxiamate time sync
-    sync_sub_.connectInput(image_sub_, camera_info_sub_, depth_sub_,depth_camera_info_sub_);
-    sync_sub_.registerCallback(&ImageDepthSub::dataCallback, this);
-  }
-  void onInit()
-  {
-    prev_ = ros::Time::now();
-
-    setupSubs();
-    setupPubs();
-
-    ROS_INFO("init done");
-  }
-
-  void dataCallback(const ImageConstPtr& image, const CameraInfoConstPtr& camera_info,
-                    const ImageConstPtr& depth, const CameraInfoConstPtr& depth_camera_info)
-  {
-    ros::Time n = image->header.stamp;
-    float dt = (n - prev_).toSec();
-    ROS_INFO_STREAM("Processing frame bundle. dt=" << dt);
-    prev_ = n;
-    image_ci = camera_info;
-    depth_ci = depth_camera_info;
-    this->image = image;
-    this->depth = depth;
-  }
-  static void declare_params(tendrils& params)
-  {
-    params.declare<std::string> ("camera", "RGB camera topic.", "/camera/rgb");
-    params.declare<std::string> ("depth_camera", "The depth camera topic.", "/camera/depth");
-  }
-
-  static void declare_io(const tendrils& parms, tendrils& in, tendrils& out)
-  {
-    out.declare<ImageConstPtr>("image","The rgb image");
-    out.declare<ImageConstPtr>("depth","The 16bit single channel depth image, in mm.");
-    out.declare<CameraInfoConstPtr>("image_camera_info","The camera info for the rgb image.");
-    out.declare<CameraInfoConstPtr>("depth_camera_info","The camera info for the depth image.");
-  }
-
-  void configure(tendrils& p)
-  {
-      std::string camera_remap = boost::str( boost::format("camera:=%s") % p.get<std::string>("camera") );
-      std::string depth_camera_remap = boost::str( boost::format("depth_camera:=%s") % p.get<std::string>("depth_camera") );
-      int argc = 3;
-      const char* argv[] = {"./camera_sub",camera_remap.c_str(),depth_camera_remap.c_str(),0};
-      ros::init(argc, const_cast<char**>(argv) , "camera_sub");
-      onInit();
-  }
-  
-  int process(const tendrils& in, tendrils& out)
-  {
-    do
+    void setupSubs()
     {
-      ros::spinOnce();
-      //spin until we get a package.
-      if(image) break;
-    }while(true);
-    
-    out.get<ImageConstPtr>("image") = image;
-    out.get<ImageConstPtr>("depth") = depth;
-    out.get<CameraInfoConstPtr>("image_camera_info") = image_ci;
-    out.get<CameraInfoConstPtr>("depth_camera_info") = depth_ci;
-    image.reset();
-    depth.reset();
-    image_ci.reset();
-    depth_ci.reset();
-    return ecto::OK;
-  }
-  ImageConstPtr image,depth;
-  CameraInfoConstPtr image_ci,depth_ci;
-};
+      image_sub_.reset(new ImageSubscriber);
+      depth_sub_.reset(new ImageSubscriber);
+      camera_info_sub_.reset(new CameraInfoSubscriber), depth_camera_info_sub_.reset(
+                                                                                     new CameraInfoSubscriber);
+      //may be remapped to : /camera/rgb
+      camera_topic_ = nh_->resolveName("camera", true);
+      depth_camera_topic_ = nh_->resolveName("depth_camera", true);
 
+      ROS_INFO_STREAM("camera topic is set to " << camera_topic_);
+      ROS_INFO_STREAM("depth camera topic is set to " << depth_camera_topic_);
+
+      //subscribe to rgb camera topics
+      image_sub_->subscribe(*nh_, camera_topic_ + "/image_color", 2);
+      camera_info_sub_->subscribe(*nh_, camera_topic_ + "/camera_info", 2);
+
+      //subscribe to depth image topics
+      depth_sub_->subscribe(*nh_, depth_camera_topic_ + "/image", 2);
+      depth_camera_info_sub_->subscribe(*nh_,
+                                        depth_camera_topic_ + "/camera_info", 2);
+
+      //setup the approxiamate time sync
+      sync_sub_->connectInput(*image_sub_, *camera_info_sub_, *depth_sub_,
+                              *depth_camera_info_sub_);
+      sync_sub_->registerCallback(&ImageDepthSub::dataCallback, this);
+    }
+    void onInit()
+    {
+      setupSubs();
+
+      ROS_INFO("init done");
+    }
+
+    void dataCallback(const ImageConstPtr& image,
+                      const CameraInfoConstPtr& camera_info,
+                      const ImageConstPtr& depth,
+                      const CameraInfoConstPtr& depth_camera_info)
+    {
+      image_ci = camera_info;
+      depth_ci = depth_camera_info;
+      this->image = image;
+      this->depth = depth;
+    }
+    static void declare_params(tendrils& params)
+    {
+    }
+
+    static void declare_io(const tendrils& p, tendrils& in, tendrils& out)
+    {
+      out.declare<ImageConstPtr> ("image", "The rgb image");
+      out.declare<ImageConstPtr> ("depth",
+                                  "The 16bit single channel depth image, in mm.");
+      out.declare<CameraInfoConstPtr> ("image_camera_info",
+                                       "The camera info for the rgb image.");
+      out.declare<CameraInfoConstPtr> ("depth_camera_info",
+                                       "The camera info for the depth image.");
+
+    }
+
+    void configure(tendrils& p, tendrils& in, tendrils& out)
+    {
+      nh_.reset(new ros::NodeHandle);
+      sync_sub_.reset(new SynchronizerImageDepthCamera(10));
+      onInit();
+    }
+
+    int process(const tendrils& in, tendrils& out)
+    {
+      do
+      {
+        ros::spinOnce();
+        //spin until we get a package.
+        if (image)
+          break;
+      } while (ros::ok());
+
+      out.get<ImageConstPtr> ("image") = image;
+      out.get<ImageConstPtr> ("depth") = depth;
+      out.get<CameraInfoConstPtr> ("image_camera_info") = image_ci;
+      out.get<CameraInfoConstPtr> ("depth_camera_info") = depth_ci;
+      image.reset();
+      depth.reset();
+      image_ci.reset();
+      depth_ci.reset();
+      if (!ros::ok())
+        return ecto::QUIT;
+      return ecto::OK;
+    }
+    ImageConstPtr image, depth;
+    CameraInfoConstPtr image_ci, depth_ci;
+  };
 
 }
 
+ECTO_REGISTRY( ecto_ros);
+
+namespace bp = boost::python;
+void ros_init_wtf(bp::object sys_argv, const std::string& node_name)
+{
+  std::vector<std::string> args;
+  bp::stl_input_iterator<std::string> begin(sys_argv), end;
+  std::copy(begin, end, std::back_inserter(args));
+  char ** argv = new char*[args.size()];
+  for (int i = 0, ie = args.size(); i < ie; ++i)
+  {
+    argv[i] = const_cast<char*>(args[i].data());
+  }
+  int ac = args.size();
+  ros::init(ac, argv, node_name.c_str(), ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
+  delete [] argv;
+}
 BOOST_PYTHON_MODULE(ecto_ros)
 {
-  ecto::wrap<ros::ImageDepthSub>("ImageDepthSub","Subscribes to something that looks like a kinect, using time synchronizers.");
+  ECTO_REGISTER(ecto_ros);
+  bp::def("init",ros_init_wtf, "Calls roscpp initialization routine. Please call with sys.argv, or similar list of commandline args. Will not strip them...");
+  ecto::wrap<ros::ImageDepthSub>("ImageDepthSub",
+                                 "Subscribes to something that looks like a kinect, using time synchronizers.");
 }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.4.6)
+cmake_minimum_required(VERSION 2.8)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 # Set the build type.  Options are:
@@ -14,7 +14,7 @@ rosbuild_init()
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib/ecto_ros)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #uncomment if you have defined messages
 #rosbuild_genmsg()
@@ -30,8 +30,22 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib/ecto_ros)
 #target_link_libraries(example ${PROJECT_NAME})
 
 find_package(ecto REQUIRED)
+find_package(OpenCV REQUIRED)
 
-ectomodule(camera_sub
+rosbuild_add_library(${PROJECT_NAME}
     src/camera_sub.cpp
+    src/cv_bridge.cpp
 )
+
+target_link_libraries(${PROJECT_NAME}
+    ${OpenCV_LIBS}
+    ${Boost_LIBRARIES}
+    ${PYTHON_LIBRARIES}
+    ecto
+)
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    OUTPUT_NAME ${PROJECT_NAME}
+    PREFIX ""
+    )
 
