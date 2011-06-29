@@ -163,7 +163,7 @@ namespace ros
 
 }
 
-ECTO_REGISTRY( ecto_ros);
+
 
 namespace bp = boost::python;
 void ros_init_wtf(bp::object sys_argv, const std::string& node_name)
@@ -180,9 +180,9 @@ void ros_init_wtf(bp::object sys_argv, const std::string& node_name)
   ros::init(ac, argv, node_name.c_str(), ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
   delete [] argv;
 }
-BOOST_PYTHON_MODULE(ecto_ros)
+
+ECTO_DEFINE_MODULE(ecto_ros)
 {
-  ECTO_REGISTER(ecto_ros);
   bp::def("init",ros_init_wtf, "Calls roscpp initialization routine. Please call with sys.argv, or similar list of commandline args. Will not strip them...");
   ecto::wrap<ros::ImageDepthSub>("ImageDepthSub",
                                  "Subscribes to something that looks like a kinect, using time synchronizers.");
