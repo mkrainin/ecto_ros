@@ -16,36 +16,4 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
-
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
-
-find_package(ecto REQUIRED)
-find_package(OpenCV REQUIRED)
-
-rosbuild_add_library(${PROJECT_NAME}
-    src/camera_sub.cpp
-    src/cv_bridge.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-    ${OpenCV_LIBS}
-    ${Boost_LIBRARIES}
-    ${PYTHON_LIBRARIES}
-    ecto
-)
-set_target_properties(${PROJECT_NAME}
-    PROPERTIES
-    OUTPUT_NAME ${PROJECT_NAME}
-    PREFIX ""
-    )
-
+add_subdirectory(src)
