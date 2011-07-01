@@ -1,21 +1,25 @@
 <package>
   <description brief="ecto_ros">
 
-     ecto_ros
+     ecto_ros is the ecto bindings for ROS.
 
   </description>
   <author>Ethan Rublee</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/ecto_ros</url>
+  
   <depend package="roscpp"/>
   <depend package="rospy"/>
   <depend package="sensor_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="message_filters"/>
+  
   <export>
-    <python path="${prefix}/lib/"/>
+    <python path="${prefix}/build"/>
+    <cpp cflags="-I{prefix}/include"/>
   </export>
+  
   <rosdep name="ecto0.1"/>
   <rosdep name="ecto_opencv"/>
 </package>

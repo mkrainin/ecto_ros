@@ -32,7 +32,6 @@ find_ros_package(roscpp)
 find_ros_package(geometry_msgs)
 find_ros_package(sensor_msgs)
 find_ros_package(message_filters)
-include_directories(${CMAKE_SOURCE_DIR}/include)
 
 ectomodule(ecto_ros
     ecto_ros.cpp
@@ -50,6 +49,8 @@ link_ecto(ecto_ros
 )
 
 install_ecto_module(ecto_ros)
+
 set_target_properties(ecto_ros_ectomodule
   PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE
 )
+

@@ -8,7 +8,7 @@ install-script: |
   make -j8
   echo "About to run checkinstall make install"
   sudo checkinstall -y --nodoc --pkgname ecto-opencv make install <<EOF
-  ecto_opencv is mad awesome.
+  ecto-opencv is mad awesome.
   EOF
 check_presence_script: |
   #!/usr/bin/env python
