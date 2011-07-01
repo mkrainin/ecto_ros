@@ -4,10 +4,13 @@ all: build
 build:
 	mkdir build && cd build && cmake ..
 
-.PHONY : clean
+.PHONY : clean wipe
 
 clean:
-	cd build && $(MAKE)
+	cd build && $(MAKE) clean
 
-install:
-	cd build && sudo checkinstall -y --nodoc --pkgname ecto-ros-0.1.0 make install << "ecto_ros 0.1.0\n\n"
+wipe:
+	rm -rf build
+
+install: all
+	cd build && checkinstall -y --nodoc --pkgname ecto-ros-0.1.0 $(MAKE) install << "ecto_ros 0.1.0\n\n"
