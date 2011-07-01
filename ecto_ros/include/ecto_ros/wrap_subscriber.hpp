@@ -30,6 +30,8 @@
 #include <ecto/ecto.hpp>
 #include <ros/ros.h>
 #include <string>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
 
 namespace ecto_ros
 {
@@ -40,12 +42,19 @@ namespace ecto_ros
   struct Subscriber
   {
     typedef typename MessageT::ConstPtr MessageConstPtr;
-
+    //ros subscription stuffs
     ros::NodeHandle nh_;
     ros::Subscriber sub_;
     std::string topic_;
     int buffer_;
+    boost::condition_variable cond_;
+    boost::mutex mut_;
     MessageConstPtr data_;
+    ecto::spore<MessageConstPtr> out_;
+
+    Subscriber()
+    {
+    }
 
     void
     setupSubs()
@@ -59,7 +68,11 @@ namespace ecto_ros
     void
     dataCallback(const typename MessageT::ConstPtr& data)
     {
-      data_ = data;
+      {
+        boost::lock_guard<boost::mutex> lock(mut_);
+        data_ = data;
+      }
+      cond_.notify_one();
     }
 
     static void
@@ -80,22 +93,22 @@ namespace ecto_ros
     {
       topic_ = p.get<std::string> ("topic_name");
       buffer_ = p.get<int> ("buffer_size");
+      out_ = out.at("output");
       setupSubs();
     }
 
     int
     process(const ecto::tendrils& in, ecto::tendrils& out)
     {
-      do
       {
-        ros::spinOnce();
-        //spin until we get a package.
-        if (data_) break;
-      } while (ros::ok());
-
-      out.get<MessageConstPtr> ("output") = data_;
-      data_.reset();
-      if (!ros::ok()) return ecto::QUIT;
+        boost::unique_lock<boost::mutex> lock(mut_);
+        while (!data_)
+        {
+          cond_.wait(lock);
+        }
+        *out_ = data_;
+        data_.reset();
+      }
       return ecto::OK;
     }
   };

@@ -16,6 +16,8 @@
   <export>
     <python path="${prefix}/lib/"/>
   </export>
+  <rosdep name="ecto0.1"/>
+  <rosdep name="ecto_opencv"/>
 </package>
 
 

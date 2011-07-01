@@ -1,0 +1,9 @@
+ecto0.1:
+  ubuntu: ecto0.1-dev
+ecto0.1:
+  ubuntu: ecto0.1-dev
+
+ecto_opencv:
+  ubuntu:
+    source:
+      url: file:///u/erublee/ros_vision_dev/ecto_ros/ecto_ros/ecto_opencv.rdmanifest
