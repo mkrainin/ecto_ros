@@ -6,7 +6,7 @@ if(ROSIFY)
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
   set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 else()
-
+  set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 endif()
 
 add_subdirectory(src)

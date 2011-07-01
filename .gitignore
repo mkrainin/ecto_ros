@@ -10,3 +10,4 @@ boost.lockfree/
 boost.atomic/
 bin
 lib
+build*/

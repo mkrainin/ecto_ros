@@ -7,7 +7,7 @@ macro (rospack VAR)
       OUTPUT_VARIABLE ${VAR}
       OUTPUT_STRIP_TRAILING_WHITESPACE
       )
-    separate_arguments(${VAR} ${${VAR}})
+    separate_arguments(${VAR} UNIX_COMMAND ${${VAR}})
     set(${VAR} ${${VAR}} CACHE STRING "WoNder Bread")
     set(${VAR}_CACHED TRUE CACHE BOOL "WoNder Bread 2")
     message(STATUS "${VAR} := ${${VAR}}")
@@ -23,7 +23,7 @@ macro (find_ros_package NAME)
   add_definitions(" ${${NAME}_DEFINITIONS}")
   rospack(${NAME}_LIBRARY_DIRS libs-only-L ${NAME})
   rospack(${NAME}_LIBRARIES libs-only-l ${NAME})
-  link_directories(${NAME}_LIBRARY_DIRS)
+  link_directories(${${NAME}_LIBRARY_DIRS})
 endmacro()
 
 
@@ -32,6 +32,7 @@ find_ros_package(roscpp)
 find_ros_package(geometry_msgs)
 find_ros_package(sensor_msgs)
 find_ros_package(message_filters)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 ectomodule(ecto_ros
     ecto_ros.cpp
@@ -46,4 +47,9 @@ link_ecto(ecto_ros
     ${geometry_msgs_LIBRARIES}
     ${sensor_msgs_LIBRARIES}
     ${message_filters_LIBRARIES}
+)
+
+install_ecto_module(ecto_ros)
+set_target_properties(ecto_ros_ectomodule
+  PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE
 )
