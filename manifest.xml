@@ -16,7 +16,7 @@
   <depend package="message_filters"/>
   
   <export>
-    <python path="${prefix}/build"/>
+    <python path="${prefix}/build/lib"/>
     <cpp cflags="-I{prefix}/include"/>
   </export>
   
