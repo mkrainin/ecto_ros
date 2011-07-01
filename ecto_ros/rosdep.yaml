@@ -6,4 +6,4 @@ ecto0.1:
 ecto_opencv:
   ubuntu:
     source:
-      url: file:///u/erublee/ros_vision_dev/ecto_ros/ecto_ros/ecto_opencv.rdmanifest
+      url: https://raw.github.com/plasmodic/ecto_ros/master/ecto_ros/ecto_opencv.rdmanifest
