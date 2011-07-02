@@ -1,9 +1,13 @@
 macro (rospack VAR)
   if(NOT ${VAR}_CACHED)
-    execute_process(COMMAND rospack ${ARGN}
+    execute_process(COMMAND /usr/bin/env rospack ${ARGN}
       OUTPUT_VARIABLE ${VAR}
+      ERROR_VARIABLE rospack_error
       OUTPUT_STRIP_TRAILING_WHITESPACE
       )
+    if(rospack_error)
+      message(FATAL_ERROR "Is your path setup correctly for ROS?\nrospack failed:${rospack_error}")
+    endif()
     separate_arguments(${VAR} UNIX_COMMAND ${${VAR}})
     set(${VAR} ${${VAR}} CACHE STRING "${VAR} value")
     set(${VAR}_CACHED TRUE CACHE BOOL "${VAR} cached flag")

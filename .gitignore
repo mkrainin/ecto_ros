@@ -11,3 +11,4 @@ boost.atomic/
 bin
 lib
 build*/
+b*/
