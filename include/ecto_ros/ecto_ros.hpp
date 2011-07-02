@@ -27,4 +27,5 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #pragma once
-#include <ecto_ros/wrap_subscriber>
+#include <ecto_ros/wrap_pub.hpp>
+#include <ecto_ros/wrap_sub.hpp>

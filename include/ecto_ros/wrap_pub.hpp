@@ -30,8 +30,6 @@
 #include <ecto/ecto.hpp>
 #include <ros/ros.h>
 #include <string>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition_variable.hpp>
 
 namespace ecto_ros
 {
@@ -39,76 +37,55 @@ namespace ecto_ros
    * \brief Use this to wrap a simple ros message subscriber.
    */
   template<typename MessageT>
-  struct Subscriber
+  struct Publisher
   {
     typedef typename MessageT::ConstPtr MessageConstPtr;
     //ros subscription stuffs
     ros::NodeHandle nh_;
-    ros::Subscriber sub_;
+    ros::Publisher pub_;
     std::string topic_;
-    int buffer_;
-    boost::condition_variable cond_;
-    boost::mutex mut_;
-    MessageConstPtr data_;
-    ecto::spore<MessageConstPtr> out_;
-
-    Subscriber()
-    {
-    }
+    int queue_size_;
+    bool latched_;
+    ecto::spore<MessageConstPtr> in_;
 
     void
-    setupSubs()
+    setupPubs()
     {
       //look up remapping
       std::string topic = nh_.resolveName(topic_, true);
-      sub_ = nh_.subscribe(topic, buffer_, &Subscriber::dataCallback, this);
-      ROS_INFO_STREAM("subscribed to topic:" << topic);
-    }
-
-    void
-    dataCallback(const typename MessageT::ConstPtr& data)
-    {
-      {
-        boost::lock_guard<boost::mutex> lock(mut_);
-        data_ = data;
-      }
-      cond_.notify_one();
+      pub_ = nh_.advertise<MessageT> (topic, queue_size_, latched_);
+      ROS_INFO_STREAM("publishing to topic:" << topic);
     }
 
     static void
-    declare_params(ecto::tendrils& params)
+    declare_params(ecto::tendrils& p)
     {
-      params.declare<std::string> ("topic_name", "The topic name to subscribe to.", "topic_foo");
-      params.declare<int> ("buffer_size", "The amount to buffer incoming messages.", 2);
+      p.declare<std::string> ("topic_name", "The topic name to publish to. May be remapped.").set_required();
+      p.declare<int> ("queue_size", "The amount to buffer incoming messages.", 2);
+      p.declare<bool> ("latched", "Is this a latched topic?",false);
+
     }
 
     static void
-    declare_io(const ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
+    declare_io(const ecto::tendrils& /*p*/, ecto::tendrils& in, ecto::tendrils& /*out*/)
     {
-      out.declare<MessageConstPtr> ("output", "The received message.");
+      in.declare<MessageConstPtr> ("input", "The message to publish.");
     }
 
     void
     configure(ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
     {
       topic_ = p.get<std::string> ("topic_name");
-      buffer_ = p.get<int> ("buffer_size");
-      out_ = out.at("output");
-      setupSubs();
+      queue_size_ = p.get<int> ("queue_size");
+      latched_ = p.get<bool>("latched");
+      in_ = in.at("input");
+      setupPubs();
     }
 
     int
     process(const ecto::tendrils& in, ecto::tendrils& out)
     {
-      {
-        boost::unique_lock<boost::mutex> lock(mut_);
-        while (!data_)
-        {
-          cond_.wait(lock);
-        }
-        *out_ = data_;
-        data_.reset();
-      }
+      pub_.publish(**in_);
       return ecto::OK;
     }
   };

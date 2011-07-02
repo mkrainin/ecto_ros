@@ -11,6 +11,7 @@ ectomodule(ecto_ros
     camera_sub.cpp
     cv_bridge.cpp
     message_sub.cpp
+    message_pub.cpp
 )
 
 link_ecto(ecto_ros

@@ -26,18 +26,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <ecto_ros/wrap_sub.hpp>
+#include <ecto_ros/wrap_pub.hpp>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/PointCloud2.h>
 
 namespace ecto_ros
 {
-  struct Subscriber_Image : ecto_ros::Subscriber<sensor_msgs::Image> {};
-  struct Subscriber_CameraInfo : ecto_ros::Subscriber<sensor_msgs::CameraInfo> {};
-  struct Subscriber_PointCloud2 : ecto_ros::Subscriber<sensor_msgs::PointCloud2> {};
+  struct Publisher_Image : ecto_ros::Publisher<sensor_msgs::Image> {};
+  struct Publisher_CameraInfo : ecto_ros::Publisher<sensor_msgs::CameraInfo> {};
+  struct Publisher_PointCloud2 : ecto_ros::Publisher<sensor_msgs::PointCloud2> {};
 }
 
-ECTO_MODULE(ecto_ros, ecto_ros::Subscriber_Image,"Subscriber_Image", "Subscribes an sensor_msgs::Image topic.");
-ECTO_MODULE(ecto_ros, ecto_ros::Subscriber_CameraInfo,"Subscriber_CameraInfo", "Subscribes an sensor_msgs::CameraInfo topic.");
-ECTO_MODULE(ecto_ros, ecto_ros::Subscriber_PointCloud2,"Subscriber_PointCloud2", "Subscribes an sensor_msgs::PointCloud2 topic.");
+ECTO_MODULE(ecto_ros, ecto_ros::Publisher_Image,"Publisher_Image", "Publishes a sensor_msgs::Image topic.");
+ECTO_MODULE(ecto_ros, ecto_ros::Publisher_CameraInfo,"Publisher_CameraInfo", "Publishes a sensor_msgs::CameraInfo topic.");
+ECTO_MODULE(ecto_ros, ecto_ros::Publisher_PointCloud2,"Publisher_PointCloud2", "Publishes a sensor_msgs::PointCloud2 topic.");
