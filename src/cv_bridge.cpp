@@ -200,22 +200,22 @@ namespace ecto_ros
                                 "A sensor_msg::Image message.");
     }
 
-    void configure(const tendrils& p, tendrils& i, tendrils& o)
+    void configure(tendrils& p, tendrils& i, tendrils& o)
     {
       mat_ = i.at("image");
       image_msg_out_ = o.at("image");
       frame_id_ = p.get<std::string>("frame_id");
       header_.frame_id = frame_id_;
+      encoding_ = p.at("encoding");
     }
     int process(const tendrils& i, tendrils& o)
     {
       ImagePtr image_msg(new Image);
       toImageMsg(*mat_,*image_msg);
-//      if(encoding_.user_supplied())
-//      {
-//        image_msg->encoding = encoding_();
-//      }
-      throw ecto::except::EctoException("what?");
+      if(encoding_.user_supplied())
+      {
+        image_msg->encoding = encoding_();
+      }
       header_.seq++;
       header_.stamp = ros::Time::now();
       image_msg->header = header_;

@@ -14,12 +14,32 @@ struct Spinner
   void
   operator()()
   {
+    std::cout << "Spinning up."<< std::endl;
     ros::spin();
+    std::cout << "Spinning down." << std::endl;
   }
-  static boost::scoped_ptr<boost::thread> thread_;
 };
 
-boost::scoped_ptr<boost::thread> Spinner::thread_;
+struct RosLifetime
+{
+  RosLifetime():thread_(new boost::thread(Spinner()))
+  {
+  }
+  ~RosLifetime()
+  {
+    if(ros::ok())
+    {
+      std::cout << "Shutting node down."<< std::endl;
+      ros::requestShutdown();
+    }
+    std::cout << "Joining ros thread." << std::endl;
+    thread_->join();
+    std::cout << "Goodnight." << std::endl;
+  }
+  boost::scoped_ptr<boost::thread> thread_;
+  static boost::scoped_ptr<RosLifetime> its_a_ros_life_;
+};
+boost::scoped_ptr<RosLifetime>  RosLifetime::its_a_ros_life_;
 
 namespace bp = boost::python;
 void
@@ -37,7 +57,7 @@ ros_init_wtf(bp::object sys_argv, const std::string& node_name)
   ros::init(ac, argv, node_name.c_str(), ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
   delete[] argv;
 
-  Spinner::thread_.reset(new boost::thread(Spinner()));
+  RosLifetime::its_a_ros_life_.reset(new RosLifetime());
 }
 
 ECTO_DEFINE_MODULE(ecto_ros)
