@@ -91,8 +91,60 @@ namespace
 
     throw std::runtime_error("Unrecognized image encoding [" + encoding + "]");
   }
+
+  std::string mattype2enconding(int mat_type)
+  {
+    switch(mat_type)
+    {
+      case CV_8UC1:
+        return enc::MONO8;
+      case CV_8UC3:
+        return enc::RGB8;
+      case CV_16SC1:
+        return enc::MONO16;
+      case CV_8UC4:
+        return enc::RGBA8;
+      default:
+        break;
+    }
+
+#define CASE_ENCODING(code)                    \
+    case CV_##code : return enc::TYPE_##code; do{}while(false)    \
+    /***/
+#define CASE_CHANNEL_TYPE(t)                   \
+    CASE_ENCODING(t##1);                         \
+    CASE_ENCODING(t##2);                         \
+    CASE_ENCODING(t##3);                         \
+    CASE_ENCODING(t##4);                         \
+    /***/
+    switch(mat_type)
+    {
+      CASE_CHANNEL_TYPE(8UC);
+      CASE_CHANNEL_TYPE(8SC);
+      CASE_CHANNEL_TYPE(16UC);
+      CASE_CHANNEL_TYPE(16SC);
+      CASE_CHANNEL_TYPE(32SC);
+      CASE_CHANNEL_TYPE(32FC);
+      CASE_CHANNEL_TYPE(64FC);
+      default:
+        throw std::runtime_error("Unknown encoding type.");
+    }
+
+  }
+  void toImageMsg(const cv::Mat& mat, sensor_msgs::Image& ros_image)
+  {
+    ros_image.height = mat.rows;
+    ros_image.width = mat.cols;
+    ros_image.encoding = mattype2enconding(mat.type());
+    ros_image.is_bigendian = false;
+    ros_image.step = mat.step;
+    size_t size = mat.step * mat.rows;
+    ros_image.data.resize(size);
+    memcpy((char*)(&ros_image.data[0]), mat.data, size);
+  }
+
 }
-namespace ros
+namespace ecto_ros
 {
 
   using ecto::tendrils;
@@ -108,11 +160,15 @@ namespace ros
 
       o.declare<cv::Mat> ("image", "A cv::Mat copy.");
     }
+    void configure(const tendrils& /*p*/, tendrils& i, tendrils& o)
+    {
+      image_msg_ = i.at("image");
+      mat_ = o.at("image");
+    }
     int process(const tendrils& i, tendrils& o)
     {
-      ImageConstPtr image = i.get<ImageConstPtr> ("image");
-      cv::Mat& mat = o.get<cv::Mat> ("image");
-
+      ImageConstPtr image = *image_msg_;
+      cv::Mat& mat = *mat_;
       // Construct matrix pointing to source data
       int source_type = getCvType(image->encoding);
       cv::Mat
@@ -121,9 +177,61 @@ namespace ros
       temp.copyTo(mat);
       return ecto::OK;
     }
+    ecto::spore<ImageConstPtr> image_msg_;
+    ecto::spore<cv::Mat> mat_;
+
+  };
+
+  struct Mat2Image
+  {
+    static void
+    declare_params(tendrils& p)
+    {
+      p.declare<std::string>("frame_id","Frame this data is associated with","default_frame");
+      p.declare<std::string>("encoding","ROS image message encoding override.");
+
+
+    }
+
+    static void declare_io(const tendrils& /*p*/, tendrils& i, tendrils& o)
+    {
+      i.declare<cv::Mat> ("image", "A cv::Mat.");
+      o.declare<ImageConstPtr> ("image",
+                                "A sensor_msg::Image message.");
+    }
+
+    void configure(const tendrils& p, tendrils& i, tendrils& o)
+    {
+      mat_ = i.at("image");
+      image_msg_out_ = o.at("image");
+      frame_id_ = p.get<std::string>("frame_id");
+      header_.frame_id = frame_id_;
+    }
+    int process(const tendrils& i, tendrils& o)
+    {
+      ImagePtr image_msg(new Image);
+      toImageMsg(*mat_,*image_msg);
+//      if(encoding_.user_supplied())
+//      {
+//        image_msg->encoding = encoding_();
+//      }
+      throw ecto::except::EctoException("what?");
+      header_.seq++;
+      header_.stamp = ros::Time::now();
+      image_msg->header = header_;
+      *image_msg_out_ =image_msg;
+      return ecto::OK;
+    }
+    std_msgs::Header header_;
+    std::string frame_id_;
+    ecto::spore<ImageConstPtr> image_msg_out_;
+    ecto::spore<cv::Mat> mat_;
+    ecto::spore<std::string> encoding_;
+
   };
 
 }
 
-ECTO_CELL(ecto_ros, ros::Image2Mat, "Image2Mat", "Converts an Image message to cv::Mat type.");
+ECTO_CELL(ecto_ros, ecto_ros::Image2Mat, "Image2Mat", "Converts an Image message to cv::Mat type.");
+ECTO_CELL(ecto_ros, ecto_ros::Mat2Image, "Mat2Image", "Converts an cv::Mat to Image message type.");
 
