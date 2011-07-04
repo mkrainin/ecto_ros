@@ -13,7 +13,7 @@ macro (rospack VAR)
     set(${VAR}_CACHED TRUE CACHE BOOL "${VAR} cached flag")
     message(STATUS "${VAR} := ${${VAR}}")
   else()
-    message(STATUS "BANG! Using cached ${VAR}")
+    #message(STATUS "BANG! Using cached ${VAR}")
   endif()
 endmacro()
 

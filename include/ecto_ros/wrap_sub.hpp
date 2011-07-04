@@ -68,6 +68,9 @@ namespace ecto_ros
     void
     dataCallback(const typename MessageT::ConstPtr& data)
     {
+      //use condition variable to allow asynchronous
+      //callback as this callback may or may not happen on
+      //the same thread as the process function.
       {
         boost::lock_guard<boost::mutex> lock(mut_);
         data_ = data;
@@ -78,21 +81,21 @@ namespace ecto_ros
     static void
     declare_params(ecto::tendrils& params)
     {
-      params.declare<std::string> ("topic_name", "The topic name to subscribe to.", "topic_foo");
-      params.declare<int> ("queue_size", "The amount to buffer incoming messages.", 2);
+      params.declare<std::string>("topic_name", "The topic name to subscribe to.", "/ros/topic/name").required(true);
+      params.declare<int>("queue_size", "The amount to buffer incoming messages.", 2);
     }
 
     static void
     declare_io(const ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
     {
-      out.declare<MessageConstPtr> ("output", "The received message.");
+      out.declare<MessageConstPtr>("output", "The received message.");
     }
 
     void
     configure(ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
     {
-      topic_ = p.get<std::string> ("topic_name");
-      queue_size_ = p.get<int> ("queue_size");
+      topic_ = p.get<std::string>("topic_name");
+      queue_size_ = p.get<int>("queue_size");
       out_ = out.at("output");
       setupSubs();
     }
@@ -100,15 +103,16 @@ namespace ecto_ros
     int
     process(const ecto::tendrils& in, ecto::tendrils& out)
     {
+      //condition variable idium, blocks until the data has
+      //been filled by ros.
+      boost::unique_lock<boost::mutex> lock(mut_);
+      while (!data_)
       {
-        boost::unique_lock<boost::mutex> lock(mut_);
-        while (!data_)
-        {
-          cond_.wait(lock);
-        }
-        *out_ = data_;
-        data_.reset();
+        cond_.wait(lock);
       }
+      *out_ = data_;
+      //reset the data_ so that the condition variable still works.
+      data_.reset();
       return ecto::OK;
     }
   };

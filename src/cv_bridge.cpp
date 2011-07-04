@@ -125,5 +125,5 @@ namespace ros
 
 }
 
-ECTO_MODULE(ecto_ros, ros::Image2Mat, "Image2Mat", "Converts an Image message to cv::Mat type.");
+ECTO_CELL(ecto_ros, ros::Image2Mat, "Image2Mat", "Converts an Image message to cv::Mat type.");
 

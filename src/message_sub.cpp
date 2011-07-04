@@ -38,6 +38,6 @@ namespace ecto_ros
   struct Subscriber_PointCloud2 : ecto_ros::Subscriber<sensor_msgs::PointCloud2> {};
 }
 
-ECTO_MODULE(ecto_ros, ecto_ros::Subscriber_Image,"Subscriber_Image", "Subscribes an sensor_msgs::Image topic.");
-ECTO_MODULE(ecto_ros, ecto_ros::Subscriber_CameraInfo,"Subscriber_CameraInfo", "Subscribes an sensor_msgs::CameraInfo topic.");
-ECTO_MODULE(ecto_ros, ecto_ros::Subscriber_PointCloud2,"Subscriber_PointCloud2", "Subscribes an sensor_msgs::PointCloud2 topic.");
+ECTO_CELL(ecto_ros, ecto_ros::Subscriber_Image,"Subscriber_Image", "Subscribes an sensor_msgs::Image topic.");
+ECTO_CELL(ecto_ros, ecto_ros::Subscriber_CameraInfo,"Subscriber_CameraInfo", "Subscribes an sensor_msgs::CameraInfo topic.");
+ECTO_CELL(ecto_ros, ecto_ros::Subscriber_PointCloud2,"Subscriber_PointCloud2", "Subscribes an sensor_msgs::PointCloud2 topic.");

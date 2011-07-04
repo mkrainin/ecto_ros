@@ -53,30 +53,32 @@ namespace ecto_ros
     {
       //look up remapping
       std::string topic = nh_.resolveName(topic_, true);
-      pub_ = nh_.advertise<MessageT> (topic, queue_size_, latched_);
+      pub_ = nh_.advertise<MessageT>(topic, queue_size_, latched_);
       ROS_INFO_STREAM("publishing to topic:" << topic);
     }
 
     static void
     declare_params(ecto::tendrils& p)
     {
-      p.declare<std::string> ("topic_name", "The topic name to publish to. May be remapped.").set_required();
-      p.declare<int> ("queue_size", "The amount to buffer incoming messages.", 2);
-      p.declare<bool> ("latched", "Is this a latched topic?",false);
+      p.declare<std::string>("topic_name",
+                             "The topic name to publish to. May be remapped.",
+                             "/ros/topic/name").required(true);
+      p.declare<int>("queue_size", "The amount to buffer incoming messages.", 2);
+      p.declare<bool>("latched", "Is this a latched topic?", false);
 
     }
 
     static void
     declare_io(const ecto::tendrils& /*p*/, ecto::tendrils& in, ecto::tendrils& /*out*/)
     {
-      in.declare<MessageConstPtr> ("input", "The message to publish.");
+      in.declare<MessageConstPtr>("input", "The message to publish.").required(true);
     }
 
     void
     configure(ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
     {
-      topic_ = p.get<std::string> ("topic_name");
-      queue_size_ = p.get<int> ("queue_size");
+      topic_ = p.get<std::string>("topic_name");
+      queue_size_ = p.get<int>("queue_size");
       latched_ = p.get<bool>("latched");
       in_ = in.at("input");
       setupPubs();

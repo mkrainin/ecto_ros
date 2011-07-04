@@ -37,8 +37,8 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/program_options.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
 
 #include <iostream>
 #include <string>
@@ -54,106 +54,101 @@ namespace ros
 
     typedef message_filters::Subscriber<CameraInfo> CameraInfoSubscriber;
     typedef message_filters::Subscriber<Image> ImageSubscriber;
-    typedef message_filters::sync_policies::ApproximateTime<Image, CameraInfo,
-        Image, CameraInfo> ApproxSyncPolicy;
-    typedef message_filters::Synchronizer<ApproxSyncPolicy>
-        SynchronizerImageDepthCamera;
+    typedef message_filters::sync_policies::ApproximateTime<Image, CameraInfo, Image, CameraInfo> ApproxSyncPolicy;
+    typedef message_filters::Synchronizer<ApproxSyncPolicy> SynchronizerImageDepthCamera;
 
-    boost::scoped_ptr<ImageSubscriber> image_sub_, depth_sub_;
-    boost::scoped_ptr<CameraInfoSubscriber> camera_info_sub_,
-        depth_camera_info_sub_;
-    boost::scoped_ptr<SynchronizerImageDepthCamera> sync_sub_;
-    boost::scoped_ptr<ros::NodeHandle> nh_;
+    ImageSubscriber image_sub_, depth_sub_;
+    CameraInfoSubscriber camera_info_sub_, depth_camera_info_sub_;
+    SynchronizerImageDepthCamera sync_sub_;
+    ros::NodeHandle nh_;
     string camera_topic_, depth_camera_topic_;
-  public:
 
-    void setupSubs()
+    boost::condition_variable cond_;
+    boost::mutex mut_;
+  public:
+    ImageDepthSub()
+        :
+          sync_sub_(10)
     {
-      image_sub_.reset(new ImageSubscriber);
-      depth_sub_.reset(new ImageSubscriber);
-      camera_info_sub_.reset(new CameraInfoSubscriber), depth_camera_info_sub_.reset(
-                                                                                     new CameraInfoSubscriber);
+    }
+    void
+    setupSubs()
+    {
       //may be remapped to : /camera/rgb
-      camera_topic_ = nh_->resolveName("camera", true);
-      depth_camera_topic_ = nh_->resolveName("depth_camera", true);
+      camera_topic_ = nh_.resolveName("camera", true);
+      depth_camera_topic_ = nh_.resolveName("depth_camera", true);
 
       ROS_INFO_STREAM("camera topic is set to " << camera_topic_);
       ROS_INFO_STREAM("depth camera topic is set to " << depth_camera_topic_);
 
       //subscribe to rgb camera topics
-      image_sub_->subscribe(*nh_, camera_topic_ + "/image_color", 2);
-      camera_info_sub_->subscribe(*nh_, camera_topic_ + "/camera_info", 2);
+      image_sub_.subscribe(nh_, camera_topic_ + "/image_color", 2);
+      camera_info_sub_.subscribe(nh_, camera_topic_ + "/camera_info", 2);
 
       //subscribe to depth image topics
-      depth_sub_->subscribe(*nh_, depth_camera_topic_ + "/image", 2);
-      depth_camera_info_sub_->subscribe(*nh_,
-                                        depth_camera_topic_ + "/camera_info", 2);
+      depth_sub_.subscribe(nh_, depth_camera_topic_ + "/image", 2);
+      depth_camera_info_sub_.subscribe(nh_, depth_camera_topic_ + "/camera_info", 2);
 
       //setup the approxiamate time sync
-      sync_sub_->connectInput(*image_sub_, *camera_info_sub_, *depth_sub_,
-                              *depth_camera_info_sub_);
-      sync_sub_->registerCallback(&ImageDepthSub::dataCallback, this);
+      sync_sub_.connectInput(image_sub_, camera_info_sub_, depth_sub_, depth_camera_info_sub_);
+      sync_sub_.registerCallback(&ImageDepthSub::dataCallback, this);
     }
-    void onInit()
+
+    void
+    dataCallback(const ImageConstPtr& image, const CameraInfoConstPtr& camera_info, const ImageConstPtr& depth,
+                 const CameraInfoConstPtr& depth_camera_info)
+    {
+      //use condition variable to allow asynchronous
+      //callback and data management.
+      {
+        boost::lock_guard<boost::mutex> lock(mut_);
+        image_ci = camera_info;
+        depth_ci = depth_camera_info;
+        this->image = image;
+        this->depth = depth;
+      }
+      cond_.notify_one();
+    }
+
+    static void
+    declare_params(tendrils& params)
+    {
+    }
+
+    static void
+    declare_io(const tendrils& p, tendrils& in, tendrils& out)
+    {
+      out.declare<ImageConstPtr>("image", "The rgb image");
+      out.declare<ImageConstPtr>("depth", "The 16bit single channel depth image, in mm.");
+      out.declare<CameraInfoConstPtr>("image_camera_info", "The camera info for the rgb image.");
+      out.declare<CameraInfoConstPtr>("depth_camera_info", "The camera info for the depth image.");
+
+    }
+
+    void
+    configure(tendrils& p, tendrils& in, tendrils& out)
     {
       setupSubs();
-
-      ROS_INFO("init done");
     }
 
-    void dataCallback(const ImageConstPtr& image,
-                      const CameraInfoConstPtr& camera_info,
-                      const ImageConstPtr& depth,
-                      const CameraInfoConstPtr& depth_camera_info)
+    int
+    process(const tendrils& in, tendrils& out)
     {
-      image_ci = camera_info;
-      depth_ci = depth_camera_info;
-      this->image = image;
-      this->depth = depth;
-    }
-    static void declare_params(tendrils& params)
-    {
-    }
-
-    static void declare_io(const tendrils& p, tendrils& in, tendrils& out)
-    {
-      out.declare<ImageConstPtr> ("image", "The rgb image");
-      out.declare<ImageConstPtr> ("depth",
-                                  "The 16bit single channel depth image, in mm.");
-      out.declare<CameraInfoConstPtr> ("image_camera_info",
-                                       "The camera info for the rgb image.");
-      out.declare<CameraInfoConstPtr> ("depth_camera_info",
-                                       "The camera info for the depth image.");
-
-    }
-
-    void configure(tendrils& p, tendrils& in, tendrils& out)
-    {
-      nh_.reset(new ros::NodeHandle);
-      sync_sub_.reset(new SynchronizerImageDepthCamera(10));
-      onInit();
-    }
-
-    int process(const tendrils& in, tendrils& out)
-    {
-      do
+      //condition variable
+      boost::unique_lock<boost::mutex> lock(mut_);
+      while (!image)
       {
-        ros::spinOnce();
-        //spin until we get a package.
-        if (image)
-          break;
-      } while (ros::ok());
-
-      out.get<ImageConstPtr> ("image") = image;
-      out.get<ImageConstPtr> ("depth") = depth;
-      out.get<CameraInfoConstPtr> ("image_camera_info") = image_ci;
-      out.get<CameraInfoConstPtr> ("depth_camera_info") = depth_ci;
+        cond_.wait(lock);
+      }
+      out.get<ImageConstPtr>("image") = image;
+      out.get<ImageConstPtr>("depth") = depth;
+      out.get<CameraInfoConstPtr>("image_camera_info") = image_ci;
+      out.get<CameraInfoConstPtr>("depth_camera_info") = depth_ci;
+      //reset our local pointers for next callback
       image.reset();
       depth.reset();
       image_ci.reset();
       depth_ci.reset();
-      if (!ros::ok())
-        return ecto::QUIT;
       return ecto::OK;
     }
 
@@ -163,4 +158,5 @@ namespace ros
 
 }
 
-ECTO_MODULE(ecto_ros, ros::ImageDepthSub,"ImageDepthSub", "Subscribes to something that looks like a kinect, using time synchronizers.");
+ECTO_CELL(ecto_ros, ros::ImageDepthSub, "ImageDepthSub",
+          "Subscribes to something that looks like a kinect, using time synchronizers.");

@@ -38,6 +38,6 @@ namespace ecto_ros
   struct Publisher_PointCloud2 : ecto_ros::Publisher<sensor_msgs::PointCloud2> {};
 }
 
-ECTO_MODULE(ecto_ros, ecto_ros::Publisher_Image,"Publisher_Image", "Publishes a sensor_msgs::Image topic.");
-ECTO_MODULE(ecto_ros, ecto_ros::Publisher_CameraInfo,"Publisher_CameraInfo", "Publishes a sensor_msgs::CameraInfo topic.");
-ECTO_MODULE(ecto_ros, ecto_ros::Publisher_PointCloud2,"Publisher_PointCloud2", "Publishes a sensor_msgs::PointCloud2 topic.");
+ECTO_CELL(ecto_ros, ecto_ros::Publisher_Image,"Publisher_Image", "Publishes a sensor_msgs::Image topic.");
+ECTO_CELL(ecto_ros, ecto_ros::Publisher_CameraInfo,"Publisher_CameraInfo", "Publishes a sensor_msgs::CameraInfo topic.");
+ECTO_CELL(ecto_ros, ecto_ros::Publisher_PointCloud2,"Publisher_PointCloud2", "Publishes a sensor_msgs::PointCloud2 topic.");
