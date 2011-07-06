@@ -45,6 +45,11 @@ namespace ecto_ros
 
   struct RT2PoseStamped
   {
+  
+    static void declare_params(tendrils& p)
+    {
+      p.declare<std::string>("frame_id","The frame id that generated the pose.").required(true);
+    }
     static void declare_io(const tendrils& /*p*/, tendrils& i, tendrils& o)
     {
       i.declare<cv::Mat> ("R",
@@ -53,15 +58,19 @@ namespace ecto_ros
                                 "3X1 Translation vector.");
       o.declare<PoseStampedConstPtr> ("pose", "A geometry_msgs::PoseStamped.");
     }
-    void configure(const tendrils& p, tendrils& i, tendrils& o)
+    void configure(tendrils& p, tendrils& i, tendrils& o)
     {
       R_ = i.at("R");
       T_ = i.at("T");
       pose_ = o.at("pose");
-      frame_id_ = "ecto_frame";
+      frame_id_ = p.at("frame_id");
     }
     int process(const tendrils&, tendrils&)
     {
+      wpose_.reset(new PoseStamped);
+      *pose_ = wpose_;
+      if(R_().empty() || T_().empty())
+        return ecto::OK;
       cv::Mat R,T;
       R_().convertTo(R,CV_32F);T_().convertTo(T,CV_32F);
       Eigen::Matrix3f rotation_matrix;
@@ -70,7 +79,7 @@ namespace ecto_ros
           rotation_matrix(j, i) = R.at<float> (j, i);
 
       Eigen::Quaternion<float> quaternion(rotation_matrix);
-      wpose_.reset(new PoseStamped);
+ 
       PoseStamped& pose = *wpose_;
       pose.pose.position.x = T.at<float> (0);
       pose.pose.position.y = T.at<float> (1);
@@ -81,12 +90,11 @@ namespace ecto_ros
       pose.pose.orientation.w = quaternion.w();
       pose.header.seq++;
       pose.header.stamp = ros::Time::now();
-      pose.header.frame_id = frame_id_;
-      *pose_ = wpose_;
+      pose.header.frame_id = frame_id_();
       return ecto::OK;
     }
     PoseStampedPtr wpose_;
-    std::string frame_id_;
+    ecto::spore<std::string> frame_id_;
     ecto::spore<PoseStampedConstPtr> pose_;
     ecto::spore<cv::Mat> R_,T_;
   };

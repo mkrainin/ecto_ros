@@ -21,7 +21,7 @@
   
   <!-- misc package deps -->
   <depend package="message_filters"/>
-  
+  <depend package="eigen"/>
   <export>
     <python path="${prefix}/build/lib"/>
     <cpp cflags="-I{prefix}/include"/>
