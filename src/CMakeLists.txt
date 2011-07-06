@@ -1,5 +1,5 @@
 find_package(ecto REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.3.1 EXACT REQUIRED)
 
 find_ros_package(roscpp)
 find_ros_package(geometry_msgs)
