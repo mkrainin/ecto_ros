@@ -52,6 +52,8 @@ ectomodule(ecto_ros
     camera_sub.cpp
     cv_bridge.cpp
     cv_pose.cpp
+    Synchronizer.cpp
+    camera_sync_printer.cpp
 )
 
 link_ecto(ecto_ros

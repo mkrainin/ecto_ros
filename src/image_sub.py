@@ -6,10 +6,16 @@ import ecto_ros, ecto_sensor_msgs
 from ecto_opencv import highgui
 import sys
 
-def do_ecto():
-    sub_rgb = ecto_sensor_msgs.Subscriber_Image("image_sub",topic_name='camera/rgb/image_mono')
-    sub_depth = ecto_sensor_msgs.Subscriber_Image("depth_sub",topic_name='camera/depth/image')
 
+ImageSub = ecto_sensor_msgs.Subscriber_Image
+CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
+
+def do_ecto():
+    sub_rgb = ImageSub("image_sub",topic_name='camera/rgb/image_mono')
+    sub_depth = ImageSub("depth_sub",topic_name='camera/depth/image')
+    sub_depth_info = CameraInfoSub(topic_name='camera/depth/camera_info')
+    sub_rgb_info = CameraInfoSub(topic_name='camera/rgb/camera_info')
+    
     im2mat_rgb = ecto_ros.Image2Mat()
     im2mat_depth = ecto_ros.Image2Mat()
 
