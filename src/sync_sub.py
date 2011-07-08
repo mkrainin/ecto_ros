@@ -10,11 +10,14 @@ ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
 def do_ecto():
 
-    sync = ecto_ros.Synchronizer('Synchronizator', subs={'image':ImageSub(topic_name='camera/rgb/image_mono',queue_size=0),
-                                                         'depth':ImageSub(topic_name='camera/depth/image',queue_size=0),
-                                                         'depth_info':CameraInfoSub(topic_name='camera/depth/camera_info',queue_size=0),
-                                                         'image_info':CameraInfoSub(topic_name='camera/rgb/camera_info',queue_size=0),
-                                                         });
+    subs = dict( image=ImageSub(topic_name='camera/rgb/image_color',queue_size=0),
+                depth=ImageSub(topic_name='camera/depth/image',queue_size=0),
+                depth_info=CameraInfoSub(topic_name='camera/depth/camera_info',queue_size=0),
+                image_info=CameraInfoSub(topic_name='camera/rgb/camera_info',queue_size=0),
+             )
+    
+    sync = ecto_ros.Synchronizer('Synchronizator', subs=subs
+                                 )
 
     drift_printer = ecto_ros.DriftPrinter()
     
@@ -34,8 +37,10 @@ def do_ecto():
     ecto.view_plasm(plasm)
     
     sched = ecto.schedulers.Threadpool(plasm)
-    sched.execute(8)
+    sched.execute(1)
 
+    #sched = ecto.schedulers.Singlethreaded(plasm)
+    #sched.execute()
 if __name__ == "__main__":
     ecto_ros.init(sys.argv, "ecto_node")
     do_ecto()

@@ -57,7 +57,7 @@ namespace ecto_ros
     static double
     calcOffset(ros::Time rhs, ros::Time lhs)
     {
-      return std::abs(rhs.toSec() - lhs.toSec())* 1000;
+      return std::abs(rhs.toSec() - lhs.toSec()) * 1000;
     }
     int
     process(tendrils& i, tendrils& o)
@@ -68,12 +68,11 @@ namespace ecto_ros
       i["image_info"] >> image_info;
       i["depth"] >> depth;
       i["depth_info"] >> depth_info;
-//      std::cout << image_info->header.stamp.toSec() << " " << depth_info->header.stamp.toSec() << " "
-//          << image_info->header.stamp.toSec() << " " << depth_info->header.stamp.toSec() << "\n" << std::endl;
 
-      std::cout << "\ndrifts(millis):\n\t" << "image -> image_info " << calcOffset(image_info->header.stamp, image->header.stamp)
-          << "\n\timage -> depth " << calcOffset(image_info->header.stamp, depth->header.stamp) << "\n\tdepth -> depth_info "
-          << calcOffset(depth->header.stamp, depth_info->header.stamp);
+      std::cout << "\ndrifts(millis):\n\t" << "image -> image_info " << calcOffset(image_info->header.stamp,
+                                                                                   image->header.stamp)
+          << "\n\timage -> depth " << calcOffset(image_info->header.stamp, depth->header.stamp)
+          << "\n\tdepth -> depth_info " << calcOffset(depth->header.stamp, depth_info->header.stamp);
 
       return ecto::OK;
     }

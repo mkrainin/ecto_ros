@@ -40,16 +40,13 @@ macro(pubsub_gen_wrap ROS_PACKAGE)
     )
 endmacro()
 
-pubsub_gen_wrap(actionlib_msgs)
-pubsub_gen_wrap(diagnostic_msgs)
+pubsub_gen_wrap(std_msgs)
+pubsub_gen_wrap(sensor_msgs)
 pubsub_gen_wrap(geometry_msgs)
 pubsub_gen_wrap(nav_msgs)
-pubsub_gen_wrap(sensor_msgs)
-
 
 ectomodule(ecto_ros
     ecto_ros.cpp
-    camera_sub.cpp
     cv_bridge.cpp
     cv_pose.cpp
     Synchronizer.cpp
@@ -61,7 +58,6 @@ link_ecto(ecto_ros
     ${roscpp_LIBRARIES}
     ${geometry_msgs_LIBRARIES}
     ${sensor_msgs_LIBRARIES}
-    ${message_filters_LIBRARIES}
 )
 
 install_ecto_module(ecto_ros)
@@ -69,4 +65,3 @@ install_ecto_module(ecto_ros)
 set_target_properties(ecto_ros_ectomodule
   PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE
 )
-
