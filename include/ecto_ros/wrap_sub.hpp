@@ -62,7 +62,7 @@ namespace ecto_ros
       //look up remapping
       std::string topic = nh_.resolveName(topic_, true);
       sub_ = nh_.subscribe(topic, queue_size_, &Subscriber::dataCallback, this);
-      ROS_INFO_STREAM("subscribed to topic:" << topic);
+      ROS_INFO_STREAM("subscribed to topic:" << topic << " with queue size of " << queue_size_);
     }
 
     void
@@ -103,7 +103,7 @@ namespace ecto_ros
     int
     process(const ecto::tendrils& in, ecto::tendrils& out)
     {
-      //condition variable idium, blocks until the data has
+      //condition variable idiom, blocks until the data has
       //been filled by ros.
       boost::unique_lock<boost::mutex> lock(mut_);
       while (!data_)
