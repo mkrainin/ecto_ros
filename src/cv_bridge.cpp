@@ -214,7 +214,7 @@ namespace ecto_ros
       toImageMsg(*mat_,*image_msg);
       if(encoding_.user_supplied())
       {
-        image_msg->encoding = encoding_();
+        image_msg->encoding = encoding_.read();
       }
       header_.seq++;
       header_.stamp = ros::Time::now();
