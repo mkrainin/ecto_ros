@@ -52,7 +52,6 @@ namespace ecto_ros
     static void
     declare_io(const ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
     {
-      std::cout << __PRETTY_FUNCTION__ << std::endl;
       bp::object subs = p.get<bp::object> ("subs");
       if (!subs || subs == bp::object())
         return;
