@@ -52,12 +52,9 @@ namespace ecto_ros
     static void
     declare_io(const ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
     {
-      std::cout << __PRETTY_FUNCTION__ << std::endl;
       bp::object subs = p.get<bp::object> ("subs");
       if (!subs || subs == bp::object())
         return;
-      std::cout << "subs" << std::endl;
-      std::cout << bp::len(subs) << std::endl;
       bp::list l = bp::dict(subs).items();
       for (int j = 0; j < bp::len(l); ++j)
       {
@@ -65,10 +62,8 @@ namespace ecto_ros
         bp::object value = l[j][1];
         std::string keystring = bp::extract<std::string>(key);
         ecto::cell::ptr cell = bp::extract<ecto::cell::ptr>(value);
-        std::cout << keystring << std::endl;
         out[keystring] = cell->outputs["output"];
       }
-
     }
 
     void
@@ -82,7 +77,6 @@ namespace ecto_ros
         bp::object value = l[j][1];
         std::string keystring = bp::extract<std::string>(key);
         ecto::cell::ptr cell = bp::extract<ecto::cell::ptr>(value);
-        std::cout << keystring << std::endl;
         cells_.push_back(cell);
         cell->configure();
       }
@@ -92,9 +86,9 @@ namespace ecto_ros
     process(const ecto::tendrils& in, ecto::tendrils& out)
     {
       BOOST_FOREACH(ecto::cell::ptr cell,cells_)
-            {
-              cell->process();
-            }
+      {
+        cell->process();
+      }
       return ecto::OK;
     }
     std::vector<ecto::cell::ptr> cells_;
