@@ -52,6 +52,8 @@ ectomodule(ecto_ros
     cv_pose.cpp
     Synchronizer.cpp
     BagReader.cpp
+    BagWriter.cpp
+    
     camera_sync_printer.cpp
 )
 
