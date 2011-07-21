@@ -9,8 +9,8 @@ ImageSub = ecto_sensor_msgs.Subscriber_Image
 ImagePub = ecto_sensor_msgs.Publisher_Image
 
 def do_ecto():
-    sub_rgb = ImageSub("image_sub",topic_name='camera/rgb/image_mono')
-    sub_depth = ImageSub("depth_sub",topic_name='camera/depth/image')
+    sub_rgb = ImageSub("image_sub",topic_name='/camera/rgb/image_mono')
+    sub_depth = ImageSub("depth_sub",topic_name='/camera/depth/image')
     pub_rgb = ImagePub("image_pub", topic_name='my_image')
     pub_depth = ImagePub("depth_pub", topic_name='my_depth')
     
