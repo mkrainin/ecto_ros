@@ -4,6 +4,7 @@ ecto_python_env_gen(${LIBRARY_OUTPUT_PATH})
 find_package(OpenCV 2.3.1 EXACT REQUIRED)
 
 find_ros_package(roscpp)
+find_ros_package(rosbag)
 find_ros_package(eigen)
 find_ros_package(geometry_msgs)
 find_ros_package(sensor_msgs)
@@ -50,6 +51,7 @@ ectomodule(ecto_ros
     cv_bridge.cpp
     cv_pose.cpp
     Synchronizer.cpp
+    BagReader.cpp
     camera_sync_printer.cpp
 )
 

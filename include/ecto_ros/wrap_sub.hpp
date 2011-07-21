@@ -29,13 +29,14 @@
 #pragma once
 #include <ecto/ecto.hpp>
 #include <ros/ros.h>
+#include <rosbag/view.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <string>
 
 namespace ecto_ros
 {
-  /**
+   /**
    * \brief Use this to wrap a simple ros message subscriber.
    */
   template<typename MessageT>

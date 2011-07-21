@@ -28,69 +28,73 @@
  */
 #pragma once
 #include <ecto/ecto.hpp>
-#include <ros/ros.h>
-#include <rosbag/bag.h>
+#include <rosbag/view.h>
+#include <ros/time.h>
 #include <string>
 
 namespace ecto_ros
 {
+  struct Bagger_base
+  {
+    typedef boost::shared_ptr<const Bagger_base> ptr;
+    virtual
+    ~Bagger_base()
+    {
+    }
+    virtual ecto::tendril::ptr
+    instantiate() const = 0;
+    virtual ecto::tendril::ptr
+    instantiate(rosbag::View::iterator message) const = 0;
+
+    virtual
+    void
+    write(rosbag::Bag& bag, const std::string& topic, const ros::Time& stamp, const ecto::tendril& t) const = 0;
+
+  };
+
   /**
-   * \brief Use this to wrap a simple ros message subscriber.
+   * \brief enables instantiation from a bag.
    */
   template<typename MessageT>
-  struct Publisher
+  struct Bagger: Bagger_base
   {
     typedef typename MessageT::ConstPtr MessageConstPtr;
-    //ros subscription stuffs
-    ros::NodeHandle nh_;
-    ros::Publisher pub_;
-    std::string topic_;
-    int queue_size_;
-    bool latched_;
-    ecto::spore<MessageConstPtr> in_;
 
-    void
-    setupPubs()
+    virtual
+    ~Bagger()
     {
-      //look up remapping
-      std::string topic = nh_.resolveName(topic_, true);
-      pub_ = nh_.advertise<MessageT>(topic, queue_size_, latched_);
-      ROS_INFO_STREAM("publishing to topic:" << topic);
     }
 
-    static void
-    declare_params(ecto::tendrils& p)
+    ecto::tendril::ptr
+    instantiate() const
     {
-      p.declare<std::string>("topic_name",
-                             "The topic name to publish to. May be remapped.",
-                             "/ros/topic/name").required(true);
-      p.declare<int>("queue_size", "The amount to buffer incoming messages.", 2);
-      p.declare<bool>("latched", "Is this a latched topic?", false);
-
+      ecto::tendril::ptr tp = ecto::tendril::make_tendril<MessageConstPtr>();
+      return tp;
     }
-
-    static void
-    declare_io(const ecto::tendrils& /*p*/, ecto::tendrils& in, ecto::tendrils& /*out*/)
+    ecto::tendril::ptr
+    instantiate(rosbag::View::iterator message) const
     {
-      in.declare<MessageConstPtr>("input", "The message to publish.").required(true);
+      ecto::tendril::ptr tp = instantiate();
+      MessageConstPtr mcp = message->instantiate<MessageT>();
+      if (mcp)
+        tp->set(mcp);
+      return tp;
     }
 
     void
-    configure(ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
+    write(rosbag::Bag& bag, const std::string& topic, const ros::Time& stamp, const ecto::tendril& t) const
     {
-      topic_ = p.get<std::string>("topic_name");
-      queue_size_ = p.get<int>("queue_size");
-      latched_ = p.get<bool>("latched");
-      in_ = in.at("input");
-      setupPubs();
+      MessageConstPtr mcp;
+      t >> mcp;
+      bag.write(topic, stamp, *mcp);
     }
 
-    int
-    process(const ecto::tendrils& in, ecto::tendrils& out)
+    static void
+    declare_params(ecto::tendrils& params)
     {
-      if(in_.read())
-        pub_.publish(**in_);
-      return ecto::OK;
+      params.declare<std::string>("topic_name", "The topic name to subscribe to.", "/ros/topic/name").required(true);
+      params.declare<Bagger_base::ptr>("bagger", "The bagger.", Bagger_base::ptr(new Bagger<MessageT>()));
     }
+
   };
 }

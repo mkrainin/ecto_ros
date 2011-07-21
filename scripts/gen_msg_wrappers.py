@@ -8,6 +8,8 @@ source_code='''/* DO NOT EDIT or check into source control
  */
 #include <ecto_ros/wrap_sub.hpp>
 #include <ecto_ros/wrap_pub.hpp>
+#include <ecto_ros/wrap_bag.hpp>
+
 
 #include <%(msg_pkg)s/%(msg_type)s.h>
 
@@ -15,11 +17,12 @@ namespace ecto_%(msg_pkg)s
 {
     struct Subscriber_%(msg_type)s : ecto_ros::Subscriber<%(msg_pkg)s::%(msg_type)s> {};
     struct Publisher_%(msg_type)s : ecto_ros::Publisher<%(msg_pkg)s::%(msg_type)s> {};
+    struct Bagger_%(msg_type)s : ecto_ros::Bagger<%(msg_pkg)s::%(msg_type)s> {};
 }
 
 ECTO_CELL(ecto_%(msg_pkg)s, ecto_%(msg_pkg)s::Subscriber_%(msg_type)s,"Subscriber_%(msg_type)s", "Subscribes to a %(msg_pkg)s::%(msg_type)s.");
 ECTO_CELL(ecto_%(msg_pkg)s, ecto_%(msg_pkg)s::Publisher_%(msg_type)s,"Publisher_%(msg_type)s", "Publishes a %(msg_pkg)s::%(msg_type)s.");
-
+ECTO_CELL(ecto_%(msg_pkg)s, ecto_%(msg_pkg)s::Bagger_%(msg_type)s,"Bagger_%(msg_type)s", "A bagger for messages of a given type. Can enable read/write to ros bags.");
 '''
 
 module_code='''/* DO NOT EDIT or check into source control
@@ -28,7 +31,9 @@ module_code='''/* DO NOT EDIT or check into source control
  */
 #include <ecto/ecto.hpp>
 
-ECTO_DEFINE_MODULE(ecto_%(msg_pkg)s) {}
+ECTO_DEFINE_MODULE(ecto_%(msg_pkg)s)
+{
+}
 
 '''
 
