@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 PKG = 'ecto_ros' # this package name
 import roslib; roslib.load_manifest(PKG)
 import ecto
@@ -23,7 +23,7 @@ def do_ecto(device_id=0,frame_id='base', threads=1):
         sched.execute()
     else:
         sched = ecto.schedulers.Threadpool(plasm)
-        sched.execute(threads)
+        sched.execute()
 if __name__ == "__main__":
     ecto_ros.init(sys.argv, "image_pub")
     

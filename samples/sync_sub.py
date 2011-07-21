@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 PKG = 'ecto_ros' # this package name
 import roslib; roslib.load_manifest(PKG)
 import ecto
@@ -8,31 +8,26 @@ import sys
 
 ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
-ImageBagger = ecto_sensor_msgs.Bagger_Image
-CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
 def do_ecto():
 
-    baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_mono'),
-                   depth=ImageBagger(topic_name='/camera/depth/image_raw'),
-                   )
-    
-    bagwriter = ecto_ros.BagWriter('Bag Writer', baggers=baggers,
-                                            bag=sys.argv[1],
-                                            )
-    subs = dict( image=ImageSub(topic_name='/camera/rgb/image_mono',queue_size=0),
-                depth=ImageSub(topic_name='/camera/depth/image_raw',queue_size=0),
+    subs = dict( image=ImageSub(topic_name='/camera/rgb/image_color',queue_size=0),
+                depth=ImageSub(topic_name='/camera/depth/image',queue_size=0),
+                depth_info=CameraInfoSub(topic_name='/camera/depth/camera_info',queue_size=0),
+                image_info=CameraInfoSub(topic_name='/camera/rgb/camera_info',queue_size=0),
              )
     
     sync = ecto_ros.Synchronizer('Synchronizator', subs=subs
                                  )
 
+    drift_printer = ecto_ros.DriftPrinter()
+    
     im2mat_rgb = ecto_ros.Image2Mat()
     im2mat_depth = ecto_ros.Image2Mat()
     
     graph = [
                 sync["image"] >> im2mat_rgb["image"],
                 im2mat_rgb["image"] >> highgui.imshow("rgb show", name="rgb", waitKey=5)[:],
-                sync[:] >> bagwriter[:],
+                sync[:] >> drift_printer[:],
                 sync["depth"] >> im2mat_depth["image"],
                 im2mat_depth["image"] >> highgui.imshow("depth show", name="depth", waitKey= -1)[:]
             ]
@@ -41,7 +36,7 @@ def do_ecto():
     ecto.view_plasm(plasm)
     
     sched = ecto.schedulers.Threadpool(plasm)
-    sched.execute(niter=30)#capture a second.
+    sched.execute()
 
     #sched = ecto.schedulers.Singlethreaded(plasm)
     #sched.execute()

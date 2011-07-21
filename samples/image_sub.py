@@ -1,15 +1,21 @@
-#!/usr/bin/python
-#PKG = 'ecto_ros' # this package name
-#import roslib; roslib.load_manifest(PKG)
+#!/usr/bin/env python
+PKG = 'ecto_ros' # this package name
+import roslib; roslib.load_manifest(PKG)
 import ecto
 import ecto_ros, ecto_sensor_msgs
 from ecto_opencv import highgui
 import sys
 
-def do_ecto():
-    sub_rgb = ecto_sensor_msgs.Subscriber_Image("image_sub",topic_name='camera_rgb')
-    sub_depth = ecto_sensor_msgs.Subscriber_Image("depth_sub",topic_name='camera_depth')
 
+ImageSub = ecto_sensor_msgs.Subscriber_Image
+CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
+
+def do_ecto():
+    sub_rgb = ImageSub("image_sub",topic_name='camera/rgb/image_mono')
+    sub_depth = ImageSub("depth_sub",topic_name='camera/depth/image')
+    sub_depth_info = CameraInfoSub(topic_name='camera/depth/camera_info')
+    sub_rgb_info = CameraInfoSub(topic_name='camera/rgb/camera_info')
+    
     im2mat_rgb = ecto_ros.Image2Mat()
     im2mat_depth = ecto_ros.Image2Mat()
 
@@ -26,7 +32,7 @@ def do_ecto():
     ecto.view_plasm(plasm)
     
     sched = ecto.schedulers.Threadpool(plasm)
-    sched.execute(8)
+    sched.execute()
 
 if __name__ == "__main__":
     ecto_ros.init(sys.argv,"image_node")

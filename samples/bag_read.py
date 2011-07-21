@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 PKG = 'ecto_ros' # this package name
 import roslib; roslib.load_manifest(PKG)
 import ecto
