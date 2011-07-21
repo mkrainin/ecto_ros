@@ -70,7 +70,7 @@ namespace ecto_ros
         ecto::cell::ptr cell = bp::extract<ecto::cell::ptr>(value);
         Bagger_base::ptr bagger;
         cell->parameters["bagger"] >> bagger;
-        std::cout << "key: " << keystring<< std::endl;
+        std::cout << "key: " << keystring << std::endl;
         out[keystring] = bagger->instantiate();
       }
     }
@@ -91,7 +91,7 @@ namespace ecto_ros
         Bagger_base::ptr bagger;
         cell->parameters["bagger"] >> bagger;
         topics_.push_back(topic);
-        baggers_[topic] = std::make_pair(keystring,bagger);
+        baggers_[topic] = std::make_pair(keystring, bagger);
       }
       p.at("bag")->set_callback<std::string>(boost::bind(&BagReader::on_bag_name_change, this, _1));
     }
@@ -105,7 +105,7 @@ namespace ecto_ros
         bag_.open(bag_name_, rosbag::bagmode::Read);
         view_.addQuery(bag_, rosbag::TopicQuery(topics_));
         message_ = view_.begin();
-        if(message_ == view_.end())
+        if (message_ == view_.end())
         {
           throw std::runtime_error("Your bag is empty!");
         }
@@ -116,20 +116,21 @@ namespace ecto_ros
     process(const ecto::tendrils& in, ecto::tendrils& out)
     {
       std::set<std::string> counter;
-      while(counter.size() != topics_.size() && message_ != view_.end())
+      while (counter.size() != topics_.size() && message_ != view_.end())
       {
         std::string topic = (*message_).getTopic();
-        if(!counter.insert(topic).second)
+        if (!counter.insert(topic).second)
         {
-          std::cout << "Warning: More than one message from topic: " << topic << " <<<< Overwriting last seen message." << std::endl;
+          std::cout << "Warning: More than one message from topic: " << topic << " <<<< Overwriting last seen message."
+                    << std::endl;
         }
         Bagger_base::ptr bagger;
         std::string key;
-        boost::tie(key,bagger) = baggers_[topic];
+        boost::tie(key, bagger) = baggers_[topic];
         out[key]->copy_value(*(bagger->instantiate(message_)));
         ++message_;
       }
-      if(message_ == view_.end())
+      if (message_ == view_.end())
       {
         std::cout << "End of bag." << std::endl;
         return ecto::QUIT;
@@ -137,7 +138,7 @@ namespace ecto_ros
       return ecto::OK;
     }
     std::vector<std::string> topics_;
-    std::map<std::string,std::pair<std::string,Bagger_base::ptr> > baggers_;
+    std::map<std::string, std::pair<std::string, Bagger_base::ptr> > baggers_;
     std::string bag_name_;
     rosbag::Bag bag_;
     rosbag::View view_;

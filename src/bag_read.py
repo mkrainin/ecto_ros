@@ -8,6 +8,7 @@ import sys
 
 ImageBagger = ecto_sensor_msgs.Bagger_Image
 CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
+
 def do_ecto():
 
     baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
@@ -17,7 +18,6 @@ def do_ecto():
     bagreader = ecto_ros.BagReader('Bag Ripper', baggers=baggers,
                                             bag=sys.argv[1],
                                             )
-
     im2mat_rgb = ecto_ros.Image2Mat()
     im2mat_depth = ecto_ros.Image2Mat()
     
