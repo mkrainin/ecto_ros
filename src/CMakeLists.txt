@@ -50,6 +50,7 @@ ectomodule(ecto_ros
     ecto_ros.cpp
     cv_bridge.cpp
     cv_pose.cpp
+    cv_camera_info.cpp
     Synchronizer.cpp
     BagReader.cpp
     BagWriter.cpp

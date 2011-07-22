@@ -10,14 +10,14 @@ ImageBagger = ecto_sensor_msgs.Bagger_Image
 CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
 
 def do_ecto():
-
     baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
                    depth=ImageBagger(topic_name='/camera/depth/image'),
                    )
     
-    bagreader = ecto_ros.BagReader('Bag Ripper', baggers=baggers,
-                                            bag=sys.argv[1],
-                                            )
+    bagreader = ecto_ros.BagReader('Bag Ripper',
+                                    baggers=baggers,
+                                    bag=sys.argv[1],
+                                  )
     im2mat_rgb = ecto_ros.Image2Mat()
     im2mat_depth = ecto_ros.Image2Mat()
     
@@ -27,6 +27,7 @@ def do_ecto():
                 bagreader["depth"] >> im2mat_depth["image"],
                 im2mat_depth["image"] >> highgui.imshow("depth show", name="depth", waitKey= -1)[:]
             ]
+    
     plasm = ecto.Plasm()
     plasm.connect(graph)
     ecto.view_plasm(plasm)
@@ -37,5 +38,4 @@ def do_ecto():
     #sched = ecto.schedulers.Singlethreaded(plasm)
     #sched.execute()
 if __name__ == "__main__":
-    ecto_ros.init(sys.argv, "ecto_node")
     do_ecto()
