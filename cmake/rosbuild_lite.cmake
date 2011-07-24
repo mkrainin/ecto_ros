@@ -1,6 +1,6 @@
 macro (rospack VAR)
   if(NOT ${VAR}_CACHED)
-    execute_process(COMMAND /usr/bin/env rospack ${ARGN}
+    execute_process(COMMAND rospack ${ARGN}
       OUTPUT_VARIABLE ${VAR}
       ERROR_VARIABLE rospack_error
       OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -13,7 +13,7 @@ macro (rospack VAR)
     set(${VAR}_CACHED TRUE CACHE BOOL "${VAR} cached flag")
     message(STATUS "Found ${VAR}.")
   else()
-    message(STATUS "BANG! Using cached ${VAR}")
+    message(STATUS "Using cached ${VAR}")
   endif()
 endmacro()
 
