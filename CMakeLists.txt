@@ -6,11 +6,11 @@ set(ECTO_ROS_INCLUDE_PREFIX include/${ECTO_ROS_PREFIX} CACHE PATH "Where ecto_ro
 set(ECTO_ROS_SHARE_PREFIX share/${ECTO_ROS_PREFIX} CACHE PATH "Where ecto_ros share will live" FORCE)
 
 #rosbuild light
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${ecto_ros_SOURCE_DIR}/cmake)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 include(rosbuild_lite)
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${ecto_ros_SOURCE_DIR}/include)
 add_subdirectory(include/ecto_ros)
 add_subdirectory(src)
 add_subdirectory(cmake)
