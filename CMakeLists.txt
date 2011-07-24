@@ -7,7 +7,7 @@ set(ECTO_ROS_SHARE_PREFIX share/${ECTO_ROS_PREFIX} CACHE PATH "Where ecto_ros sh
 
 #rosbuild light
 find_program(ROSPACK_EXE rospack)
-option(BUILD_ECTO_ROS "Build the ecto_ros project" ON)
+set(BUILD_ECTO_ROS ON)
 
 if (NOT ROSPACK_EXE)
   message("*** unable to find rospack... is your environment set correctly?")
