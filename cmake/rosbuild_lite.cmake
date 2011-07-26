@@ -1,6 +1,6 @@
 macro (rospack VAR)
   if(NOT ${VAR}_CACHED)
-    execute_process(COMMAND /usr/bin/env rospack ${ARGN}
+    execute_process(COMMAND rospack ${ARGN}
       OUTPUT_VARIABLE ${VAR}
       ERROR_VARIABLE rospack_error
       OUTPUT_STRIP_TRAILING_WHITESPACE
