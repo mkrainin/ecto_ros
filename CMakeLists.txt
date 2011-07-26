@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(ecto_ros)
+message(STATUS "--- ${PROJECT_NAME} ---")
 set(ECTO_ROS_VERSION 0.1.0)
 set(ECTO_ROS_PREFIX ${PROJECT_NAME}-${ECTO_ROS_VERSION} CACHE PATH "Mangled prefixer" FORCE)
 set(ECTO_ROS_INCLUDE_PREFIX include/${ECTO_ROS_PREFIX} CACHE PATH "Where ecto_ros include will live" FORCE)
