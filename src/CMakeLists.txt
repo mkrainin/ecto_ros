@@ -13,7 +13,7 @@ find_ros_package(message_filters)
 macro(pubsub_gen_wrap ROS_PACKAGE)
   find_program(ECTO_ROS_GEN_MSG_WRAPPERS
     gen_msg_wrappers.py
-    PATHS ${ecto_ros_SOURCE_DIR}/scripts
+    PATHS ${ecto_ros_SOURCE_DIR}/cmake
     NO_DEFAULT_PATH)
 
   if(NOT ${ROS_PACKAGE}_srcs)
