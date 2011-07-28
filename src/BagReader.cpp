@@ -126,7 +126,7 @@ namespace ecto_ros
         Bagger_base::ptr bagger;
         std::string key;
         boost::tie(key, bagger) = baggers_[topic];
-        out[key]->copy_value(*(bagger->instantiate(message_)));
+        out[key] << bagger->instantiate(message_);
         ++message_;
       }
       if (message_ == view_.end())
