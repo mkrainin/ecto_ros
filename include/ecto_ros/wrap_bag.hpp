@@ -68,7 +68,7 @@ namespace ecto_ros
     ecto::tendril::ptr
     instantiate() const
     {
-      ecto::tendril::ptr tp = ecto::tendril::make_tendril<MessageConstPtr>();
+      ecto::tendril::ptr tp = ecto::make_tendril<MessageConstPtr>();
       return tp;
     }
     ecto::tendril::ptr
