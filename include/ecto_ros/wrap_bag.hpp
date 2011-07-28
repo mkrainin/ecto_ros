@@ -77,7 +77,7 @@ namespace ecto_ros
       ecto::tendril::ptr tp = instantiate();
       MessageConstPtr mcp = message->instantiate<MessageT>();
       if (mcp)
-        tp->set(mcp);
+        tp << mcp;
       return tp;
     }
 

@@ -69,10 +69,10 @@ namespace ecto_ros
     {
       wpose_.reset(new PoseStamped);
       *pose_ = wpose_;
-      if(R_.read().empty() || T_.read().empty())
+      if(R_->empty() || T_->empty())
         return ecto::OK;
       cv::Mat R,T;
-      R_.read().convertTo(R,CV_32F);T_.read().convertTo(T,CV_32F);
+      R_->convertTo(R,CV_32F); T_->convertTo(T,CV_32F);
       Eigen::Matrix3f rotation_matrix;
       for (unsigned int j = 0; j < 3; ++j)
         for (unsigned int i = 0; i < 3; ++i)
@@ -90,7 +90,7 @@ namespace ecto_ros
       pose.pose.orientation.w = quaternion.w();
       pose.header.seq++;
       pose.header.stamp = ros::Time::now();
-      pose.header.frame_id = frame_id_.read();
+      pose.header.frame_id = *frame_id_;
       return ecto::OK;
     }
     PoseStampedPtr wpose_;
