@@ -92,7 +92,7 @@ namespace ecto_ros
         topics_.push_back(topic);
         baggers_[topic] = std::make_pair(keystring, bagger);
       }
-      p.at("bag")->set_callback<std::string>(boost::bind(&BagReader::on_bag_name_change, this, _1));
+      p["bag"]->set_callback<std::string>(boost::bind(&BagReader::on_bag_name_change, this, _1));
     }
     void
     on_bag_name_change(const std::string& bag)

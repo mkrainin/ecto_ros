@@ -162,8 +162,8 @@ namespace ecto_ros
     }
     void configure(const tendrils& /*p*/, tendrils& i, tendrils& o)
     {
-      image_msg_ = i.at("image");
-      mat_ = o.at("image");
+      image_msg_ = i["image"];
+      mat_ = o["image"];
     }
     int process(const tendrils& i, tendrils& o)
     {
@@ -202,11 +202,11 @@ namespace ecto_ros
 
     void configure(tendrils& p, tendrils& i, tendrils& o)
     {
-      mat_ = i.at("image");
-      image_msg_out_ = o.at("image");
+      mat_ = i["image"];
+      image_msg_out_ = o["image"];
       frame_id_ = p.get<std::string>("frame_id");
       header_.frame_id = frame_id_;
-      encoding_ = p.at("encoding");
+      encoding_ = p["encoding"];
     }
     int process(const tendrils& i, tendrils& o)
     {

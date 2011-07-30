@@ -95,7 +95,7 @@ namespace ecto_ros
         baggers_[topic] = std::make_pair(keystring, bagger);
       }
       p["compressed"] >> use_compression_;
-      p.at("bag")->set_callback<std::string>(boost::bind(&BagWriter::on_bag_name_change, this, _1));
+      p["bag"]->set_callback<std::string>(boost::bind(&BagWriter::on_bag_name_change, this, _1));
     }
     void
     on_bag_name_change(const std::string& bag)
@@ -118,7 +118,7 @@ namespace ecto_ros
             Bagger_base::ptr bagger;
             std::string key;
             boost::tie(key, bagger) = baggers_[topic];
-            bagger->write(bag_, topic, ros::Time::now(), *in.at(key));
+            bagger->write(bag_, topic, ros::Time::now(), *(in[key]));
           }
       return ecto::OK;
     }

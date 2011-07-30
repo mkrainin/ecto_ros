@@ -53,10 +53,10 @@ namespace ecto_ros
     void
     configure(tendrils& p, tendrils& i, tendrils& o)
     {
-      camera_info_ = i.at("camera_info");
-      K_ = o.at("K");
-      D_ = o.at("D");
-      image_size_ = o.at("image_size");
+      camera_info_ = i["camera_info"];
+      K_ = o["K"];
+      D_ = o["D"];
+      image_size_ = o["image_size"];
     }
     int
     process(const tendrils&, tendrils&)

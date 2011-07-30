@@ -60,10 +60,10 @@ namespace ecto_ros
     }
     void configure(tendrils& p, tendrils& i, tendrils& o)
     {
-      R_ = i.at("R");
-      T_ = i.at("T");
-      pose_ = o.at("pose");
-      frame_id_ = p.at("frame_id");
+      R_ = i["R"];
+      T_ = i["T"];
+      pose_ = o["pose"];
+      frame_id_ = p["frame_id"];
     }
     int process(const tendrils&, tendrils&)
     {

@@ -81,7 +81,7 @@ namespace ecto_ros
       topic_ = p.get<std::string>("topic_name");
       queue_size_ = p.get<int>("queue_size");
       latched_ = p.get<bool>("latched");
-      in_ = in.at("input");
+      in_ = in["input"];
       setupPubs();
     }
 

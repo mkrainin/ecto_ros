@@ -97,7 +97,7 @@ namespace ecto_ros
     {
       topic_ = p.get<std::string>("topic_name");
       queue_size_ = p.get<int>("queue_size");
-      out_ = out.at("output");
+      out_ = out["output"];
       setupSubs();
     }
 
