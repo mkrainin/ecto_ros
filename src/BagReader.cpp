@@ -70,7 +70,7 @@ namespace ecto_ros
         ecto::cell::ptr cell = bp::extract<ecto::cell::ptr>(value);
         Bagger_base::ptr bagger;
         cell->parameters["bagger"] >> bagger;
-        out.insert(std::make_pair(keystring, bagger->instantiate()));
+        out.declare(keystring, bagger->instantiate());
       }
     }
 
@@ -114,6 +114,11 @@ namespace ecto_ros
     int
     process(const ecto::tendrils& in, ecto::tendrils& out)
     {
+      if (message_ == view_.end())
+      {
+        std::cout << "End of bag." << std::endl;
+        return ecto::QUIT;
+      }
       std::set<std::string> counter;
       while (counter.size() != topics_.size() && message_ != view_.end())
       {
@@ -128,11 +133,6 @@ namespace ecto_ros
         boost::tie(key, bagger) = baggers_[topic];
         out[key] << bagger->instantiate(message_);
         ++message_;
-      }
-      if (message_ == view_.end())
-      {
-        std::cout << "End of bag." << std::endl;
-        return ecto::QUIT;
       }
       return ecto::OK;
     }

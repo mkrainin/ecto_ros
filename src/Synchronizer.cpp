@@ -62,7 +62,7 @@ namespace ecto_ros
         bp::object value = l[j][1];
         std::string keystring = bp::extract<std::string>(key);
         ecto::cell::ptr cell = bp::extract<ecto::cell::ptr>(value);
-        out[keystring] = cell->outputs["output"];
+        out.declare(keystring,cell->outputs["output"]);
       }
     }
 
