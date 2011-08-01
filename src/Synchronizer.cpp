@@ -87,7 +87,9 @@ namespace ecto_ros
     {
       BOOST_FOREACH(ecto::cell::ptr cell,cells_)
       {
-        cell->process();
+        int value = cell->process();
+        if(value == ecto::QUIT)
+          return ecto::QUIT;
       }
       return ecto::OK;
     }

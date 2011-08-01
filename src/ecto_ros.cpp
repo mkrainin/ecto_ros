@@ -17,7 +17,7 @@ namespace
   {
     RosLifetime()
         :
-          spinner_(1)//0 means many threads.
+          spinner_(0)//0 means many threads.
     {
       spinner_.start();
     }
