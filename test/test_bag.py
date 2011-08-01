@@ -4,20 +4,15 @@ import ecto_ros, ecto_sensor_msgs
 import sys
 import subprocess
 import yaml
+from ecto_ros_test_utils import *
 
 ImageBagger = ecto_sensor_msgs.Bagger_Image
 CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
 
 def do_ecto():
     bagname = sys.argv[1]
-    proc = subprocess.Popen(['rosbag','info','-k','topics','-y',bagname],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    stdout,stderr = proc.communicate()
-    #should exit without error
-    if len(stderr) != 0:
-        print stderr
-        sys.exit(-1)
-    result = yaml.load(stdout)
-    counts = {info['topic']:info['messages'] for info in result}
+    counts = bag_counts(bagname)
+
     #test that the counts are the same.
     assert counts['/camera/rgb/image_color'] == counts['/camera/depth/image']
     assert counts['/camera/rgb/image_color'] != 0
@@ -50,10 +45,10 @@ def do_ecto():
     sched = ecto.schedulers.Singlethreaded(plasm)
     sched.execute()
     print "expecting count:", counts['/camera/rgb/image_color']
-    print "RGB count:",counter_rgb.outputs.count
+    print "RGB count:", counter_rgb.outputs.count
     print "Depth count:", counter_depth.outputs.count
     assert counts['/camera/rgb/image_color'] == counter_rgb.outputs.count
-    assert counts['/camera/depth/image']  == counter_depth.outputs.count
+    assert counts['/camera/depth/image'] == counter_depth.outputs.count
     #sched = ecto.schedulers.Singlethreaded(plasm)
     #sched.execute()
 if __name__ == "__main__":

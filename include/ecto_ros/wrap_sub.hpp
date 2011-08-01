@@ -52,10 +52,7 @@ namespace ecto_ros
     boost::mutex mut_;
     MessageConstPtr data_;
     ecto::spore<MessageConstPtr> out_;
-
-    Subscriber()
-    {
-    }
+    boost::thread sub_thread_;
 
     void
     setupSubs()
@@ -63,7 +60,13 @@ namespace ecto_ros
       //look up remapping
       std::string topic = nh_.resolveName(topic_, true);
       sub_ = nh_.subscribe(topic, queue_size_, &Subscriber::dataCallback, this);
-      ROS_INFO_STREAM("subscribed to topic:" << topic << " with queue size of " << queue_size_);
+      ROS_INFO_STREAM("Subscribed to topic:" << topic << " with queue size of " << queue_size_);
+    }
+
+    void
+    setupSubs_async()
+    {
+      sub_thread_ = boost::thread(boost::bind(&Subscriber<MessageT>::setupSubs,this));
     }
 
     void
@@ -98,12 +101,13 @@ namespace ecto_ros
       topic_ = p.get<std::string>("topic_name");
       queue_size_ = p.get<int>("queue_size");
       out_ = out["output"];
-      setupSubs();
+      setupSubs_async();
     }
 
     int
     process(const ecto::tendrils& in, ecto::tendrils& out)
     {
+      sub_thread_.join();
       //condition variable idiom, blocks until the data has
       //been filled by ros.
       boost::unique_lock<boost::mutex> lock(mut_);
