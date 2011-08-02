@@ -23,7 +23,10 @@ def start_roscore(delay=0.5):
     return roscore
 
 def play_bag(bagname,delay=0.5,rate=1):
-    rosbag = subprocess.Popen(['rosbag','play','-d',str(delay),'-r',str(rate),bagname],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    rosbag = subprocess.Popen(['rosbag','play','-d',str(delay),'-r',str(rate),bagname],
+                              stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
     return rosbag
 
 def wait_bag(rosbag):

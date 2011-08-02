@@ -15,7 +15,7 @@ def do_ecto(bagname, msg_counts, Scheduler):
     
     im2mat_rgb = ecto_ros.Image2Mat()
     im2mat_depth = ecto_ros.Image2Mat()
-    counter_rgb = ecto.Counter()
+    counter_rgb = ecto.Counter(every=10)
     counter_depth = ecto.Counter()
     graph = [
                 sub_rgb["output"] >> im2mat_rgb["image"],
