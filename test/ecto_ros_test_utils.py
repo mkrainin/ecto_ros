@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 import ecto
 import ecto_ros, ecto_sensor_msgs
-import sys
-import subprocess
-import yaml
-import time
+import sys, subprocess, yaml, time
 
 def bag_counts(bagname):
     proc = subprocess.Popen(['rosbag','info','-k','topics','-y',bagname],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -14,7 +11,9 @@ def bag_counts(bagname):
         print stderr
         sys.exit(-1)
     result = yaml.load(stdout)
-    counts = {info['topic']:info['messages'] for info in result}
+    counts = {}
+    for info in result:
+        counts[info['topic']] = info['messages']
     return counts
 
 def start_roscore(delay=0.5):
@@ -35,3 +34,4 @@ def wait_bag(rosbag):
     if len(stderr) != 0:
         print stderr
         sys.exit(-1)
+    time.sleep(1.0)
