@@ -28,8 +28,9 @@ def do_ecto(bagname, msg_counts, Scheduler):
 
     print "expecting RGB count:", msg_counts['/camera/rgb/image_color']
     print "RGB count:", counter_rgb.outputs.count
-    assert msg_counts['/camera/rgb/image_color'] == counter_rgb.outputs.count
-
+    assert msg_counts['/camera/rgb/image_color'] >= counter_rgb.outputs.count
+    assert counter_rgb.outputs.count != 0
+    
 if __name__ == "__main__":
     bagname = sys.argv[1]
     msg_counts = bag_counts(bagname)
