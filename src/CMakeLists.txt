@@ -23,7 +23,6 @@ macro(pubsub_gen_wrap ROS_PACKAGE)
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       OUTPUT_STRIP_TRAILING_WHITESPACE
       )
-    message(STATUS "generated ${ROS_PACKAGE} srcs : ${${ROS_PACKAGE}_srcs}")
     separate_arguments(${ROS_PACKAGE}_srcs UNIX_COMMAND ${${ROS_PACKAGE}_srcs})
     set(_SRCS)
     foreach(_SRC ${${ROS_PACKAGE}_srcs})
@@ -32,6 +31,10 @@ macro(pubsub_gen_wrap ROS_PACKAGE)
     set(${ROS_PACKAGE}_srcs ${_SRCS} CACHE STRING "The generated srcs for ${ROS_PACKAGE}")
     
   endif()
+
+  list(LENGTH ${ROS_PACKAGE}_srcs len)
+  message(STATUS "+ ${ROS_PACKAGE}: ${len} message types")
+
   find_ros_package(${ROS_PACKAGE})
   ectomodule(ecto_${ROS_PACKAGE}
     ${${ROS_PACKAGE}_srcs}
