@@ -153,6 +153,11 @@ namespace ecto_ros
 
   struct Image2Mat
   {
+    static void
+    declare_params(ecto::tendrils& p)
+    {
+      p.declare<bool>("swap_rgb", "Swap the red and blue channels", false);
+    }
     static void declare_io(const tendrils& /*p*/, tendrils& i, tendrils& o)
     {
       i.declare<ImageConstPtr> ("image",
@@ -160,10 +165,11 @@ namespace ecto_ros
 
       o.declare<cv::Mat> ("image", "A cv::Mat copy.");
     }
-    void configure(const tendrils& /*p*/, tendrils& i, tendrils& o)
+    void configure(const tendrils& p, tendrils& i, tendrils& o)
     {
       image_msg_ = i["image"];
       mat_ = o["image"];
+      swap_rgb_ = p.get<bool>("swap_rgb");
     }
     int process(const tendrils& i, tendrils& o)
     {
@@ -174,12 +180,15 @@ namespace ecto_ros
       cv::Mat
           temp((int) image->height, (int) image->width, source_type,
                const_cast<uint8_t*> (&image->data[0]), (size_t) image->step);
-      temp.copyTo(mat);
+      if (swap_rgb_)
+        cv::cvtColor(temp,mat,CV_BGR2RGB);
+      else
+        temp.copyTo(mat);
       return ecto::OK;
     }
     ecto::spore<ImageConstPtr> image_msg_;
     ecto::spore<cv::Mat> mat_;
-
+    bool swap_rgb_;
   };
 
   struct Mat2Image
