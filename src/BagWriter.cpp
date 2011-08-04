@@ -72,7 +72,7 @@ namespace ecto_ros
         ecto::cell::ptr cell = bp::extract<ecto::cell::ptr>(value);
         Bagger_base::ptr bagger;
         cell->parameters["bagger"] >> bagger;
-        in[keystring] = bagger->instantiate();
+        in.declare(keystring,bagger->instantiate());
       }
     }
 
