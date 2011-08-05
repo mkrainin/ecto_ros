@@ -1,4 +1,3 @@
-find_package(ecto REQUIRED)
 ecto_python_env_gen(${LIBRARY_OUTPUT_PATH})
 
 find_package(OpenCV 2.3.1 EXACT REQUIRED)
