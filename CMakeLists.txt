@@ -8,14 +8,13 @@ set(ECTO_ROS_PREFIX ${PROJECT_NAME}-${ECTO_ROS_VERSION} CACHE PATH "Mangled pref
 set(ECTO_ROS_INCLUDE_PREFIX include/${ECTO_ROS_PREFIX} CACHE PATH "Where ecto_ros include will live" FORCE)
 set(ECTO_ROS_SHARE_PREFIX share/${ECTO_ROS_PREFIX} CACHE PATH "Where ecto_ros share will live" FORCE)
 
-find_program(ROSPACK_EXE rospack)
 option(BUILD_ECTO_ROS "should I build ecto_ros" ON)
 if (NOT BUILD_ECTO_ROS)
   message("Skipping build of ecto_ros because BUILD_ECTO_ROS is OFF")
   return()
 endif()
 
-if (NOT ROSPACK_EXE)
+if (NOT ROSPACK_EXECUTABLE)  # found in rosbuild_lite
   message("*** unable to find rospack... is your environment set correctly?")
   set (BUILD_ECTO_ROS OFF)
   return()
