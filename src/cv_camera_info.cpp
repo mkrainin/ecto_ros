@@ -51,7 +51,7 @@ namespace ecto_ros
       o.declare<cv::Size>("image_size");
     }
     void
-    configure(tendrils& p, tendrils& i, tendrils& o)
+    configure(const tendrils& p, const tendrils& i, const tendrils& o)
     {
       camera_info_ = i["camera_info"];
       K_ = o["K"];
@@ -59,7 +59,7 @@ namespace ecto_ros
       image_size_ = o["image_size"];
     }
     int
-    process(const tendrils&, tendrils&)
+    process(const tendrils&, const tendrils&)
     {
       CameraInfo ci = **camera_info_;
       cv::Mat K(3, 3, CV_64FC1);

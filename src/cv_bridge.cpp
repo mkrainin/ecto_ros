@@ -165,13 +165,13 @@ namespace ecto_ros
 
       o.declare<cv::Mat> ("image", "A cv::Mat copy.");
     }
-    void configure(const tendrils& p, tendrils& i, tendrils& o)
+    void configure(const tendrils& p, const tendrils& i, const tendrils& o)
     {
       image_msg_ = i["image"];
       mat_ = o["image"];
       swap_rgb_ = p.get<bool>("swap_rgb");
     }
-    int process(const tendrils& i, tendrils& o)
+    int process(const tendrils& i, const tendrils& o)
     {
       ImageConstPtr image = *image_msg_;
       cv::Mat& mat = *mat_;
@@ -209,7 +209,7 @@ namespace ecto_ros
                                 "A sensor_msg::Image message.");
     }
 
-    void configure(tendrils& p, tendrils& i, tendrils& o)
+    void configure(const tendrils& p, const tendrils& i, const tendrils& o)
     {
       mat_ = i["image"];
       image_msg_out_ = o["image"];
@@ -217,7 +217,7 @@ namespace ecto_ros
       header_.frame_id = frame_id_;
       encoding_ = p["encoding"];
     }
-    int process(const tendrils& i, tendrils& o)
+    int process(const tendrils& i, const tendrils& o)
     {
       ImagePtr image_msg(new Image);
       toImageMsg(*mat_,*image_msg);

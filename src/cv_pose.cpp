@@ -58,14 +58,14 @@ namespace ecto_ros
                                 "3X1 Translation vector.");
       o.declare<PoseStampedConstPtr> ("pose", "A geometry_msgs::PoseStamped.");
     }
-    void configure(tendrils& p, tendrils& i, tendrils& o)
+    void configure(const tendrils& p, const tendrils& i, const tendrils& o)
     {
       R_ = i["R"];
       T_ = i["T"];
       pose_ = o["pose"];
       frame_id_ = p["frame_id"];
     }
-    int process(const tendrils&, tendrils&)
+    int process(const tendrils&, const tendrils&)
     {
       wpose_.reset(new PoseStamped);
       *pose_ = wpose_;

@@ -60,7 +60,7 @@ namespace ecto_ros
       return std::abs(rhs.toSec() - lhs.toSec()) * 1000;
     }
     int
-    process(tendrils& i, tendrils& o)
+    process(const tendrils& i, const tendrils& o)
     {
       ImageConstPtr image, depth;
       CameraInfoConstPtr image_info, depth_info;

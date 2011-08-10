@@ -45,18 +45,19 @@ namespace ecto_ros
 {
   namespace bp = boost::python;
 
+  using ecto::tendrils;
   struct BagReader
   {
 
     static void
-    declare_params(ecto::tendrils& params)
+    declare_params(tendrils& params)
     {
       params.declare<bp::object>("baggers", "A python dict Bagger_MessageT objects.").required(true);
       params.declare<std::string>("bag", "The bag filename.", "foo.bag").required(true);
     }
 
     static void
-    declare_io(const ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
+    declare_io(const tendrils& p, tendrils& in, tendrils& out)
     {
       bp::object baggers = p.get<bp::object>("baggers");
       if (!baggers || baggers == bp::object())
@@ -75,7 +76,7 @@ namespace ecto_ros
     }
 
     void
-    configure(ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
+    configure(const tendrils& p, const tendrils& in, const tendrils& out)
     {
       bp::object subs = p.get<bp::object>("baggers");
       bp::list l = bp::dict(subs).items();
@@ -112,7 +113,7 @@ namespace ecto_ros
     }
 
     int
-    process(const ecto::tendrils& in, ecto::tendrils& out)
+    process(const tendrils& in, const tendrils& out)
     {
       if (message_ == view_.end())
       {

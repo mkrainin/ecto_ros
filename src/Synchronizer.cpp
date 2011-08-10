@@ -40,17 +40,18 @@ namespace ecto_ros
 {
   namespace bp = boost::python;
 
+  using ecto::tendrils;
   struct Synchronizer
   {
 
     static void
-    declare_params(ecto::tendrils& params)
+    declare_params(tendrils& params)
     {
       params.declare<bp::object> ("subs", "A python dict ecto_Message_subscriber").required(true);
     }
 
     static void
-    declare_io(const ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
+    declare_io(const tendrils& p, tendrils& in, tendrils& out)
     {
       bp::object subs = p.get<bp::object> ("subs");
       if (!subs || subs == bp::object())
@@ -67,7 +68,7 @@ namespace ecto_ros
     }
 
     void
-    configure(ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
+    configure(const tendrils& p, const tendrils& in, const tendrils& out)
     {
       bp::object subs = p.get<bp::object> ("subs");
       bp::list l = bp::dict(subs).items();
@@ -83,7 +84,7 @@ namespace ecto_ros
     }
 
     int
-    process(const ecto::tendrils& in, ecto::tendrils& out)
+    process(const tendrils& in, const tendrils& out)
     {
       BOOST_FOREACH(ecto::cell::ptr cell,cells_)
       {

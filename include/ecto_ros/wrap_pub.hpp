@@ -76,7 +76,7 @@ namespace ecto_ros
     }
 
     void
-    configure(ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
+    configure(const ecto::tendrils& p, const ecto::tendrils& in, const ecto::tendrils& out)
     {
       topic_ = p.get<std::string>("topic_name");
       queue_size_ = p.get<int>("queue_size");
@@ -86,7 +86,7 @@ namespace ecto_ros
     }
 
     int
-    process(const ecto::tendrils& in, ecto::tendrils& out)
+    process(const ecto::tendrils& in, const ecto::tendrils& out)
     {
       if(*in_)
         pub_.publish(**in_);
