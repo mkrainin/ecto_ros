@@ -39,6 +39,7 @@ macro(pubsub_gen_wrap ROS_PACKAGE)
     ${${ROS_PACKAGE}_srcs}
     )
   link_ecto(ecto_${ROS_PACKAGE}
+    ecto_ros_ectomodule
     ${roscpp_LIBRARIES}
     ${${ROS_PACKAGE}_LIBRARIES}
     )
@@ -46,12 +47,12 @@ macro(pubsub_gen_wrap ROS_PACKAGE)
   set_target_properties(ecto_${ROS_PACKAGE}_ectomodule
     PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE
     )
-endmacro()
+  set_source_files_properties(${${ROS_PACKAGE}_srcs}
+    PROPERTIES
+    OBJECT_DEPENDS ${ECTO_ROS_GEN_MSG_WRAPPERS}
+    )
 
-pubsub_gen_wrap(std_msgs)
-pubsub_gen_wrap(sensor_msgs)
-pubsub_gen_wrap(geometry_msgs)
-pubsub_gen_wrap(nav_msgs)
+endmacro()
 
 ectomodule(ecto_ros
   ecto_ros.cpp
@@ -71,6 +72,11 @@ link_ecto(ecto_ros
   ${geometry_msgs_LIBRARIES}
   ${sensor_msgs_LIBRARIES}
   )
+
+pubsub_gen_wrap(std_msgs)
+pubsub_gen_wrap(sensor_msgs)
+pubsub_gen_wrap(geometry_msgs)
+pubsub_gen_wrap(nav_msgs)
 
 install_ecto_module(ecto_ros)
 

@@ -9,8 +9,8 @@ configure_file(ecto_rosConfig.cmake.in ${CMAKE_BINARY_DIR}/unix_install/ecto_ros
 configure_file(ecto_rosConfig-version.cmake.in ${CMAKE_BINARY_DIR}/unix_install/ecto_rosConfig-version.cmake @ONLY)
 
 INSTALL(FILES
-              ${CMAKE_BINARY_DIR}/unix_install/ecto_rosConfig-version.cmake
-              ${CMAKE_BINARY_DIR}/unix_install/ecto_rosConfig.cmake
-        DESTINATION ${ECTO_ROS_SHARE_PREFIX}
-        COMPONENT main
-        )
+  ${CMAKE_BINARY_DIR}/unix_install/ecto_rosConfig-version.cmake
+  ${CMAKE_BINARY_DIR}/unix_install/ecto_rosConfig.cmake
+  DESTINATION ${ECTO_ROS_SHARE_PREFIX}
+  COMPONENT main
+  )

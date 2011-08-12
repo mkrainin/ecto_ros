@@ -33,6 +33,7 @@ module_code='''/* DO NOT EDIT or check into source control
 
 ECTO_DEFINE_MODULE(ecto_%(msg_pkg)s)
 {
+  boost::python::import("ecto_ros");
 }
 
 '''
