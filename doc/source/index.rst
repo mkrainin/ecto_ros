@@ -7,6 +7,17 @@ as the inputs to your graph and publishers at the outputs, using
 converter cells as necessary (for instance, to get from Image messages
 to ``cv::Mat`` objets).  
 
+.. toctree::
+   :maxdepth: 2
+
+   ecto_ros
+   std_msgs
+   sensor_msgs
+   geometry_msgs
+   nav_msgs
+
+.. index:: 
+   :double: Remapping; ROS topics 
 
 Remapping of ros topics
 -----------------------
