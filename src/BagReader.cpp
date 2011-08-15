@@ -59,11 +59,12 @@ namespace ecto_ros
     static void
     declare_io(const tendrils& p, tendrils& in, tendrils& out)
     {
-      bp::object baggers = p.get<bp::object>("baggers");
+      bp::object baggers;
+      p["baggers"] >> baggers;
       if (!baggers || baggers == bp::object())
         return;
       bp::list l = bp::dict(baggers).items();
-      for (int j = 0; j < bp::len(l); ++j)
+      for (int j = 0, end = bp::len(l); j < end; ++j)
       {
         bp::object key = l[j][0];
         bp::object value = l[j][1];

@@ -32,8 +32,9 @@ macro(pubsub_gen_wrap ROS_PACKAGE)
   endif()
 
   list(LENGTH ${ROS_PACKAGE}_srcs len)
-  message(STATUS "+ ${ROS_PACKAGE}: ${len} message types")
-
+  if(ROS_CONFIGURE_VERBOSE)
+    message(STATUS "+ ${ROS_PACKAGE}: ${len} message types")
+  endif() 
   find_ros_package(${ROS_PACKAGE})
   ectomodule(ecto_${ROS_PACKAGE}
     ${${ROS_PACKAGE}_srcs}
