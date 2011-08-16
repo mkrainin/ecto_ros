@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(ecto_ros)
 
+add_definitions(-Wno-strict-aliasing)
+
 find_package(ecto REQUIRED) #brings in rosbuild_lite
 
 set(ECTO_ROS_VERSION 0.1.0)
