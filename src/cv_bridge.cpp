@@ -28,7 +28,8 @@
  */
 
 #include <ecto/ecto.hpp>
-
+#include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
@@ -41,7 +42,8 @@
 namespace
 {
   namespace enc = sensor_msgs::image_encodings;
-  int getCvType(const std::string& encoding)
+  int
+  getCvType(const std::string& encoding)
   {
     // Check for the most common encodings first
     if (encoding == enc::BGR8)
@@ -92,9 +94,10 @@ namespace
     throw std::runtime_error("Unrecognized image encoding [" + encoding + "]");
   }
 
-  std::string mattype2enconding(int mat_type)
+  std::string
+  mattype2enconding(int mat_type)
   {
-    switch(mat_type)
+    switch (mat_type)
     {
       case CV_8UC1:
         return enc::MONO8;
@@ -117,7 +120,7 @@ namespace
     CASE_ENCODING(t##3);                         \
     CASE_ENCODING(t##4);                         \
     /***/
-    switch(mat_type)
+    switch (mat_type)
     {
       CASE_CHANNEL_TYPE(8UC);
       CASE_CHANNEL_TYPE(8SC);
@@ -131,7 +134,8 @@ namespace
     }
 
   }
-  void toImageMsg(const cv::Mat& mat, sensor_msgs::Image& ros_image)
+  void
+  toImageMsg(const cv::Mat& mat, sensor_msgs::Image& ros_image)
   {
     ros_image.height = mat.rows;
     ros_image.width = mat.cols;
@@ -140,7 +144,61 @@ namespace
     ros_image.step = mat.step;
     size_t size = mat.step * mat.rows;
     ros_image.data.resize(size);
-    memcpy((char*)(&ros_image.data[0]), mat.data, size);
+    memcpy((char*) (&ros_image.data[0]), mat.data, size);
+  }
+
+  void
+  toPointCloud(const cv::Mat& cloud, sensor_msgs::PointCloud& msg)
+  {
+    msg.points.resize(cloud.rows);
+    std::vector<geometry_msgs::Point32>::iterator out_it = msg.points.begin();
+    const float* pi = cloud.ptr<float>(0);
+    for (int i = 0; i < cloud.rows; i++)
+    {
+      geometry_msgs::Point32& p = *(out_it++);
+      p.x = *(pi++);
+      p.y = *(pi++);
+      p.z = *(pi++);
+    };
+  }
+
+  void
+  toPointCloud(const cv::Mat& cloud, sensor_msgs::PointCloud2& msg)
+  {
+    cv::Mat wc;
+    if (!cloud.isContinuous() || cloud.depth() != CV_32F)
+    {
+      cloud.copyTo(wc, CV_32F);
+    }
+    else
+    {
+      wc = cloud;
+    }
+    msg.data.resize(wc.total() * wc.elemSize());
+    std::memcpy(msg.data.data(), wc.data, msg.data.size());
+    msg.width = wc.rows;
+    msg.height = 1;
+    msg.fields.clear();
+    sensor_msgs::PointField f;
+    f.count = 1;
+    f.datatype = sensor_msgs::PointField::FLOAT32;
+
+    f.offset = 0;
+    f.name = "x";
+
+    msg.fields.push_back(f);
+
+    f.offset += wc.elemSize();
+    f.name = "y";
+
+    msg.fields.push_back(f);
+
+    f.offset += wc.elemSize();
+    f.name = "z";
+    msg.fields.push_back(f);
+
+    msg.point_step = 3 * wc.elemSize();
+    msg.row_step = msg.point_step * msg.width;
   }
 
 }
@@ -158,30 +216,31 @@ namespace ecto_ros
     {
       p.declare<bool>("swap_rgb", "Swap the red and blue channels", false);
     }
-    static void declare_io(const tendrils& /*p*/, tendrils& i, tendrils& o)
+    static void
+    declare_io(const tendrils& /*p*/, tendrils& i, tendrils& o)
     {
-      i.declare<ImageConstPtr> ("image",
-                                "A sensor_msg::Image message from ros.");
+      i.declare<ImageConstPtr>("image", "A sensor_msg::Image message from ros.");
 
-      o.declare<cv::Mat> ("image", "A cv::Mat copy.");
+      o.declare<cv::Mat>("image", "A cv::Mat copy.");
     }
-    void configure(const tendrils& p, const tendrils& i, const tendrils& o)
+    void
+    configure(const tendrils& p, const tendrils& i, const tendrils& o)
     {
       image_msg_ = i["image"];
       mat_ = o["image"];
       swap_rgb_ = p.get<bool>("swap_rgb");
     }
-    int process(const tendrils& i, const tendrils& o)
+    int
+    process(const tendrils& i, const tendrils& o)
     {
       ImageConstPtr image = *image_msg_;
       cv::Mat& mat = *mat_;
       // Construct matrix pointing to source data
       int source_type = getCvType(image->encoding);
-      cv::Mat
-          temp((int) image->height, (int) image->width, source_type,
-               const_cast<uint8_t*> (&image->data[0]), (size_t) image->step);
+      cv::Mat temp((int) image->height, (int) image->width, source_type, const_cast<uint8_t*>(&image->data[0]),
+                   (size_t) image->step);
       if (swap_rgb_)
-        cv::cvtColor(temp,mat,CV_BGR2RGB);
+        cv::cvtColor(temp, mat, CV_BGR2RGB);
       else
         temp.copyTo(mat);
       return ecto::OK;
@@ -196,51 +255,103 @@ namespace ecto_ros
     static void
     declare_params(tendrils& p)
     {
-      p.declare<std::string>("frame_id","Frame this data is associated with","default_frame");
-      p.declare<std::string>("encoding","ROS image message encoding override.");
-
+      p.declare<std::string>("frame_id", "Frame this data is associated with", "default_frame");
+      p.declare<std::string>("encoding", "ROS image message encoding override.");
 
     }
 
-    static void declare_io(const tendrils& /*p*/, tendrils& i, tendrils& o)
+    static void
+    declare_io(const tendrils& /*p*/, tendrils& i, tendrils& o)
     {
-      i.declare<cv::Mat> ("image", "A cv::Mat.");
-      o.declare<ImageConstPtr> ("image",
-                                "A sensor_msg::Image message.");
+      i.declare<cv::Mat>("image", "A cv::Mat.");
+      o.declare<ImageConstPtr>("image", "A sensor_msg::Image message.");
     }
 
-    void configure(const tendrils& p, const tendrils& i, const tendrils& o)
+    void
+    configure(const tendrils& p, const tendrils& i, const tendrils& o)
     {
       mat_ = i["image"];
-      image_msg_out_ = o["image"];
+      cloud_msg_out_ = o["image"];
       frame_id_ = p.get<std::string>("frame_id");
       header_.frame_id = frame_id_;
       encoding_ = p["encoding"];
     }
-    int process(const tendrils& i, const tendrils& o)
+    int
+    process(const tendrils& i, const tendrils& o)
     {
       ImagePtr image_msg(new Image);
-      toImageMsg(*mat_,*image_msg);
-      if(encoding_.user_supplied())
+      toImageMsg(*mat_, *image_msg);
+      if (encoding_.user_supplied())
       {
         image_msg->encoding = *encoding_;
       }
       header_.seq++;
       header_.stamp = ros::Time::now();
       image_msg->header = header_;
-      *image_msg_out_ =image_msg;
+      *cloud_msg_out_ = image_msg;
       return ecto::OK;
     }
     std_msgs::Header header_;
     std::string frame_id_;
-    ecto::spore<ImageConstPtr> image_msg_out_;
+    ecto::spore<ImageConstPtr> cloud_msg_out_;
     ecto::spore<cv::Mat> mat_;
     ecto::spore<std::string> encoding_;
-
   };
+
+  template<typename PointCloudT>
+  struct Mat2PointCloud_
+  {
+    typedef typename PointCloudT::Ptr CloudPtr;
+    typedef typename PointCloudT::ConstPtr CloudConstPtr;
+    static void
+    declare_params(tendrils& p)
+    {
+      p.declare<std::string>("frame_id", "Frame this data is associated with", "default_frame");
+    }
+
+    static void
+    declare_io(const tendrils& /*p*/, tendrils& i, tendrils& o)
+    {
+      i.declare<cv::Mat>("image", "A cv::Mat.");
+      o.declare<CloudConstPtr>("cloud", "A sensor_msg::PointCloud2 message.");
+    }
+
+    void
+    configure(const tendrils& p, const tendrils& i, const tendrils& o)
+    {
+      mat_ = i["image"];
+      cloud_msg_out_ = o["cloud"];
+      frame_id_ = p.get<std::string>("frame_id");
+      header_.frame_id = frame_id_;
+    }
+
+    int
+    process(const tendrils& i, const tendrils& o)
+    {
+      CloudPtr cloud_msg(new PointCloudT());
+      toPointCloud(*mat_, *cloud_msg);
+      header_.seq++;
+      header_.stamp = ros::Time::now();
+      cloud_msg->header = header_;
+      *cloud_msg_out_ = cloud_msg;
+      return ecto::OK;
+    }
+    std_msgs::Header header_;
+    std::string frame_id_;
+    ecto::spore<CloudConstPtr> cloud_msg_out_;
+    ecto::spore<cv::Mat> mat_;
+    ecto::spore<std::string> encoding_;
+  };
+
+  struct Mat2PointCloud : Mat2PointCloud_<sensor_msgs::PointCloud> {};
+
+  struct Mat2PointCloud2 : Mat2PointCloud_<sensor_msgs::PointCloud2> {};
+
 
 }
 
 ECTO_CELL(ecto_ros, ecto_ros::Image2Mat, "Image2Mat", "Converts an Image message to cv::Mat type.");
 ECTO_CELL(ecto_ros, ecto_ros::Mat2Image, "Mat2Image", "Converts an cv::Mat to Image message type.");
+ECTO_CELL(ecto_ros, ecto_ros::Mat2PointCloud, "Mat2PointCloud", "Converts an cv::Mat to PointCloud.");
+ECTO_CELL(ecto_ros, ecto_ros::Mat2PointCloud2, "Mat2PointCloud2", "Converts an cv::Mat to PointCloud2.");
 
